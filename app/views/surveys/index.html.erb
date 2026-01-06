@@ -1,0 +1,16 @@
+<h1>Surveys</h1>
+
+<div class="create-survey-button-container">
+  <%= link_to 'Create New Survey', new_survey_path, class: 'btn btn-primary create-survey-button' %>
+</div>
+</p>
+<ul class="survey-list">
+  <% @surveys.each do |survey| %>
+    <li>
+      <%= render 'survey', survey: survey %>
+    </li>
+  <% end %>
+  <div class="pagination">
+    <%= will_paginate @surveys, class: 'pagination-links' %>
+  </div>
+</ul>

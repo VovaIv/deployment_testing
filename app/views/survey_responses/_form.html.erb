@@ -1,0 +1,15 @@
+<turbo-frame id="survey_<%= survey.id %>"  class="survey-frame">
+  <%= simple_form_for [survey, @survey_response] do |f| %>
+    <%= f.hidden_field :survey_id, value: survey.id %>
+    <div class="survey-question-section">
+      <p><strong>Survey Question:</strong> <%= survey.question %></p>
+    </div>
+    <div class="analytics-item">
+      <%= f.input :answer, as: :radio_buttons, collection: [['Yes', 'true'], ['No', 'false']] %>
+    </div>
+    </p>
+    <div class="survey-actions">
+      <%= f.button :submit %>
+     </div>
+  <% end %>
+</turbo-frame>
