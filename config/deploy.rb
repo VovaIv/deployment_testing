@@ -1,6 +1,6 @@
 lock "~> 3.20.0"
 
-set :application, "simple_survey_tool"
+set :application, "deployment_testing"
 set :repo_url, "git@github.com:VovaIv/deployment_testing.git"
 
 set :deploy_to, "/home/ubuntu/deployment_testing"
