@@ -1,11 +1,10 @@
-directory "/home/ubuntu/deployment_testing"
-
+directory "/home/ubuntu/deployment_testing/current"
 environment "production"
 
-pidfile "/home/ubuntu/deployment_testing/tmp/pids/puma.pid"
-state_path "/home/ubuntu/deployment_testing/tmp/pids/puma.state"
+pidfile "/home/ubuntu/deployment_testing/current/tmp/pids/puma.pid"
+state_path "/home/ubuntu/deployment_testing/current/tmp/pids/puma.state"
 
-bind "unix:///home/ubuntu/deployment_testing/tmp/sockets/puma.sock"
+bind "unix:///home/ubuntu/deployment_testing/current/tmp/sockets/puma.sock"
 
 workers 2
 threads 5, 5
