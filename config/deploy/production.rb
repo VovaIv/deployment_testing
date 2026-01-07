@@ -3,7 +3,7 @@ server "44.204.219.122",
   roles: %w{app db web},
   primary: true,
   ssh_options: {
-    keys: ["~/Downloads/vovan.pem"],
+    keys: %w(~/.ssh/id_ed25519),
     forward_agent: false,
     auth_methods: %w(publickey)
   }
