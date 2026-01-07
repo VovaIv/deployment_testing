@@ -70,3 +70,5 @@ end
 gem 'simple_form'
 
 gem 'will_paginate', '~> 3.3'
+
+gem "mysql2"

@@ -11,15 +11,15 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.1].define(version: 2025_02_01_131726) do
-  create_table "survey_responses", force: :cascade do |t|
-    t.integer "survey_id", null: false
+  create_table "survey_responses", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.bigint "survey_id", null: false
     t.boolean "answer", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["survey_id"], name: "index_survey_responses_on_survey_id"
   end
 
-  create_table "surveys", force: :cascade do |t|
+  create_table "surveys", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.string "question"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
