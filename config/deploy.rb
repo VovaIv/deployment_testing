@@ -26,3 +26,5 @@ set :keep_releases, 5
 set :puma_service_unit_name, "puma_simple_survey_tool"
 
 set :branch, "main"
+
+set :bundle_jobs, 1
