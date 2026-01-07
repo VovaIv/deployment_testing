@@ -23,8 +23,11 @@ set :linked_dirs, fetch(:linked_dirs, []).push(
 
 set :keep_releases, 5
 
-set :puma_use_sudo, true
+set :puma_role, :app
 set :puma_service_unit_name, "puma"
+set :puma_use_sudo, true
+set :puma_systemctl_user, false
+after 'deploy:symlink:shared', 'puma:restart'
 
 set :branch, "main"
 
