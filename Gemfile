@@ -72,3 +72,11 @@ gem 'simple_form'
 gem 'will_paginate', '~> 3.3'
 
 gem "mysql2"
+
+group :development do
+  gem "capistrano", "~> 3.20"
+  gem "capistrano-rails"
+  gem "capistrano-bundler"
+  gem "capistrano-rbenv"
+  gem "capistrano3-puma" 
+end
