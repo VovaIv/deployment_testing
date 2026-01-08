@@ -1,5 +1,8 @@
 class SurveyResponse < ApplicationRecord
+  # Associations
   belongs_to :survey
+  belongs_to :answer
 
-  validates :answer, inclusion: { in: [true, false] }
+  # Validations
+  validates :answer_id, presence: true
 end

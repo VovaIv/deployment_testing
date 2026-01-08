@@ -5,7 +5,10 @@
       <p><strong>Survey Question:</strong> <%= survey.question %></p>
     </div>
     <div class="analytics-item">
-      <%= f.input :answer, as: :radio_buttons, collection: [['Yes', 'true'], ['No', 'false']] %>
+      <%= f.input :answer_id, 
+          as: :radio_buttons, 
+          collection: survey.answers.map { |answer| [answer.text, answer.id] },
+          label: 'Your Answer' %>
     </div>
     </p>
     <div class="survey-actions">

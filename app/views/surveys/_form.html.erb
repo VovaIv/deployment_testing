@@ -1,9 +1,34 @@
 <div class="form-container">
-  <%= simple_form_for survey do |f| %>
+  <%= simple_form_for survey, html: { data: { controller: "nested-form" } } do |f| %>
     <div class="form-group">
       <%= f.input :question, input_html: { class: 'form-control', placeholder: 'Enter your question here' }, wrapper: false %>
     </div>
-    </p>
+
+    <div class="form-group">
+      <label class="form-label">Answer Options</label>
+      
+      <!-- Container for answer fields -->
+      <div data-nested-form-target="container">
+        <%= f.simple_fields_for :answers do |answer_form| %>
+          <%= render 'answer_fields', f: answer_form %>
+        <% end %>
+      </div>
+
+      <!-- Template for new answer fields (hidden) -->
+      <template data-nested-form-target="template">
+        <%= f.simple_fields_for :answers, Answer.new, child_index: 'NEW_RECORD' do |answer_form| %>
+          <%= render 'answer_fields', f: answer_form %>
+        <% end %>
+      </template>
+
+      <!-- Button to add more answer fields -->
+      <button type="button" 
+              class="btn btn-secondary btn-sm mt-2" 
+              data-action="click->nested-form#add">
+        + Add Answer Option
+      </button>
+    </div>
+
     <div class="form-actions">
       <%= f.button :submit, class: 'btn btn-primary' %>
       <%= link_to 'Back to Surveys', surveys_path, class: 'btn btn-secondary' %>

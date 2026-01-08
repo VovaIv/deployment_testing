@@ -1,33 +1,37 @@
 class Survey < ApplicationRecord
+  # Associations
   has_many :survey_responses, dependent: :destroy
+  has_many :answers, dependent: :destroy
+  
+  # Nested attributes support for inline answer management in forms
+  accepts_nested_attributes_for :answers, 
+    allow_destroy: true,
+    reject_if: proc { |attrs| attrs['text'].blank? }
 
+  # Validations
   validates :question, presence: true
 
-  def percentage_yes
-    return 0 if total_responses_count.zero?
-
-    (answers_yes_count.to_f / total_responses_count * 100).round(2)
-  end
-
-  def percentage_no
-    return 0 if total_responses_count.zero?
-
-    (answers_no_count.to_f / total_responses_count * 100).round(2)
-  end
-
-  def answers_yes_count
-    total_responses[true].to_i
-  end
-
-  def answers_no_count
-    total_responses[false].to_i
-  end
-
+  # Statistics methods - now work with Answer model instead of boolean
   def total_responses_count
-    @total_responses_count ||= total_responses.values.sum
+    survey_responses.count
   end
 
-  def total_responses
-    @total_responses ||= survey_responses.group(:answer).count
+  # Get count of responses per answer
+  # Returns a hash like: { Answer(id: 1, text: "Yes") => 5, Answer(id: 2, text: "No") => 3 }
+  def answer_counts
+    @answer_counts ||= survey_responses.group(:answer_id).count.transform_keys do |answer_id|
+      answers.find { |a| a.id == answer_id }
+    end.compact
+  end
+
+  # Get count for a specific answer by id
+  def answer_count(answer_id)
+    survey_responses.where(answer_id: answer_id).count
+  end
+
+  # Get percentage for a specific answer
+  def answer_percentage(answer_id)
+    return 0 if total_responses_count.zero?
+    (answer_count(answer_id).to_f / total_responses_count * 100).round(2)
   end
 end
