@@ -1,0 +1,28 @@
+<!-- Partial for rendering individual answer fields in the survey form -->
+<!-- This is rendered for each answer (existing and new) -->
+<!-- The nested-fields class is used by Stimulus to identify individual answer fieldsets -->
+
+<div class="nested-fields mb-3">
+  <div class="input-group">
+    <!-- Hidden field for answer ID (used for updates) -->
+    <%= f.input :id, as: :hidden %>
+    
+    <!-- Hidden field for _destroy flag (used for deletions) -->
+    <%= f.input :_destroy, as: :hidden %>
+    
+    <!-- Answer text input field -->
+    <%= f.input :text, 
+                label: false,
+                placeholder: 'e.g., Yes, No, Maybe',
+                input_html: { class: 'form-control' },
+                wrapper_html: { class: 'flex-grow-1' } %>
+    
+    <!-- Remove button - calls Stimulus controller to remove this field -->
+    <button type="button" 
+            class="btn btn-outline-danger btn-sm ms-2" 
+            data-action="click->nested-form#remove"
+            title="Remove this answer option">
+      Remove
+    </button>
+  </div>
+</div>
