@@ -15,7 +15,9 @@ require 'capybara/rspec'
 Capybara.register_driver :headless_chrome do |app|
   options = Selenium::WebDriver::Chrome::Options.new
 
-  options.add_argument('--headless=new') # REQUIRED for Chrome >= 109
+  options.binary = ENV['CHROME_BIN'] if ENV['CHROME_BIN']
+
+  options.add_argument('--headless=new')
   options.add_argument('--no-sandbox')
   options.add_argument('--disable-dev-shm-usage')
   options.add_argument('--disable-gpu')
@@ -30,6 +32,7 @@ end
 
 Capybara.default_driver = :rack_test
 Capybara.javascript_driver = :headless_chrome
+
 
 Capybara.configure do |config|
   config.default_max_wait_time = 5

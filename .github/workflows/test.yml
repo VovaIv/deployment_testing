@@ -24,19 +24,19 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            chromium-browser \
+            chromium \
             chromium-chromedriver
 
-          which chromium-browser
+          which chromium
           which chromedriver
-          chromium-browser --version
+          chromium --version
           chromedriver --version
 
       - name: Set up database
         env:
           RAILS_ENV: test
           CAPYBARA_HEADLESS: true
-          CHROME_BIN: /usr/bin/chromium-browser
+          CHROME_BIN: /usr/bin/chromium
         run: |
           cp config/database.yml.ci config/database.yml
           bin/rails db:create db:schema:load
