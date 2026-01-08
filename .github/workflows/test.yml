@@ -8,30 +8,35 @@ on:
     branches: 
       - '*' # Matches all branch names
 
+# Replace your current test job with this:
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    container:
+      image: ruby:3.2.1-slim
+    
+    services:
+      chrome:
+        image: seleniarm/standalone-chromium:latest
+        options: >-
+          --shm-size=2g
+          -e SE_NODE_MAX_SESSIONS=1
+          -e SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y git build-essential libpq-dev
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.2.1
           bundler-cache: true
-
-      - name: Install Chrome and ChromeDriver
-        uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: 'stable'
-      - name: Verify Chrome installation
-        run: |
-          echo "Chrome path: $(which google-chrome)"
-          echo "ChromeDriver path: $(which chromedriver)"
-          google-chrome --version
-          chromedriver --version
 
       - name: Install dependencies
         run: |
@@ -41,6 +46,7 @@ jobs:
       - name: Set up database
         env:
           RAILS_ENV: test
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test
         run: |
           cp config/database.yml.ci config/database.yml
           bin/rails db:create db:schema:load
@@ -48,4 +54,6 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
-        run: bundle exec rspec
+          CAPYBARA_SERVER_PORT: 3000
+          SELENIUM_REMOTE_URL: http://chrome:4444/wd/hub
+        run: bundle exec rspec .
