@@ -240,3 +240,19 @@ a.btn:hover {
   text-decoration: none;
   display: inline-block;
 }
+
+.navigation-bar {
+  padding: 10px;
+  background-color: #f0f0f0;
+  margin-bottom: 20px;
+}
+
+.navigation-bar a {
+  margin-right: 15px;
+  text-decoration: none;
+  color: #007bff;
+}
+
+.navigation-bar a:hover {
+  text-decoration: underline;
+}

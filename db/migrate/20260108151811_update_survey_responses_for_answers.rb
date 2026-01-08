@@ -8,8 +8,8 @@ class UpdateSurveyResponsesForAnswers < ActiveRecord::Migration[7.1]
   end
 
   def down
-    # Add back the answer boolean field
-    add_column :survey_responses, :answer, :boolean, null: false, default: false
+    # Add back the answer boolean field (nullable initially for safety)
+    add_column :survey_responses, :answer, :boolean, null: true
     
     # Remove answer_id
     remove_reference :survey_responses, :answer, foreign_key: true, index: true
