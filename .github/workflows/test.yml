@@ -26,6 +26,12 @@ jobs:
         uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: 'stable'
+      - name: Verify Chrome installation
+        run: |
+          echo "Chrome path: $(which google-chrome)"
+          echo "ChromeDriver path: $(which chromedriver)"
+          google-chrome --version
+          chromedriver --version
 
       - name: Install dependencies
         run: |
