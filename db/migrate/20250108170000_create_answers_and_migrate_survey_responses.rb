@@ -18,29 +18,25 @@ class CreateAnswersAndMigrateSurveyResponses < ActiveRecord::Migration[7.1]
     add_reference :survey_responses, :answer, foreign_key: true, index: true
 
     # Step 3: Data migration - create Yes/No answers for each survey and migrate responses
-    # We need to use execute or ActiveRecord if available
-    if table_exists?(:surveys)
-      # Get all surveys
-      surveys = execute("SELECT id FROM surveys").to_a
+    if table_exists?(:surveys) && column_exists?(:survey_responses, :answer)
+      # Use ActiveRecord for database-agnostic approach
+      Survey.reset_column_information
+      Answer.reset_column_information
+      SurveyResponse.reset_column_information
       
-      surveys.each do |survey_row|
-        survey_id = survey_row['id']
-        
+      Survey.find_each do |survey|
         # Create Yes and No answers for this survey
-        execute("INSERT INTO answers (text, survey_id, created_at, updated_at) VALUES ('Yes', #{survey_id}, NOW(), NOW())")
-        yes_answer_id = execute("SELECT LAST_INSERT_ID() as id").first['id']
+        yes_answer = Answer.create!(text: 'Yes', survey: survey)
+        no_answer = Answer.create!(text: 'No', survey: survey)
         
-        execute("INSERT INTO answers (text, survey_id, created_at, updated_at) VALUES ('No', #{survey_id}, NOW(), NOW())")
-        no_answer_id = execute("SELECT LAST_INSERT_ID() as id").first['id']
-        
-        # Update survey_responses: true -> Yes answer, false -> No answer
-        execute("UPDATE survey_responses SET answer_id = #{yes_answer_id} WHERE survey_id = #{survey_id} AND answer = TRUE")
-        execute("UPDATE survey_responses SET answer_id = #{no_answer_id} WHERE survey_id = #{survey_id} AND answer = FALSE")
+        # Update survey_responses: true -> Yes answer, false/nil -> No answer
+        SurveyResponse.where(survey_id: survey.id, answer: true).update_all(answer_id: yes_answer.id)
+        SurveyResponse.where(survey_id: survey.id, answer: [false, nil]).update_all(answer_id: no_answer.id)
       end
     end
 
     # Step 4: Remove the old boolean answer column
-    remove_column :survey_responses, :answer
+    remove_column :survey_responses, :answer if column_exists?(:survey_responses, :answer)
 
     # Step 5: Make answer_id non-nullable now that data is migrated
     change_column_null :survey_responses, :answer_id, false
@@ -52,15 +48,14 @@ class CreateAnswersAndMigrateSurveyResponses < ActiveRecord::Migration[7.1]
 
     # Migrate data back: find answer text and set boolean accordingly
     if table_exists?(:survey_responses) && column_exists?(:survey_responses, :answer_id)
-      execute(<<-SQL)
-        UPDATE survey_responses sr
-        JOIN answers a ON sr.answer_id = a.id
-        SET sr.answer = CASE
-          WHEN a.text = 'Yes' THEN TRUE
-          WHEN a.text = 'No' THEN FALSE
-          ELSE FALSE
-        END
-      SQL
+      SurveyResponse.reset_column_information
+      Answer.reset_column_information
+      
+      SurveyResponse.includes(:answer).find_each do |sr|
+        if sr.answer
+          sr.update_column(:answer, sr.answer.text == 'Yes')
+        end
+      end
     end
 
     # Make answer column non-nullable
