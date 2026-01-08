@@ -1,5 +1,9 @@
 class Survey < ApplicationRecord
   has_many :survey_responses, dependent: :destroy
+  has_many :answers, dependent: :destroy
+
+  # Accept nested attributes for answers to allow inline creation/editing/deletion
+  accepts_nested_attributes_for :answers, allow_destroy: true, reject_if: :all_blank
 
   validates :question, presence: true
 
