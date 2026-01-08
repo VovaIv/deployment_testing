@@ -7,6 +7,14 @@ require 'rspec/rails'
 require 'capybara/rails'
 require 'capybara/rspec'
 
+RSpec.configure do |config|
+  config.before(:each, type: :system) do |example|
+    if example.metadata[:js] != true
+      driven_by :rack_test
+    end
+  end
+end
+
 # Only register a JS driver if you plan to use JS tests in the future
 Capybara.register_driver :remote_chrome do |app|
   url = ENV.fetch("SELENIUM_REMOTE_URL", "http://chrome:4444/wd/hub")
