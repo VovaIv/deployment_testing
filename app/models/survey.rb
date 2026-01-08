@@ -26,7 +26,7 @@ class Survey < ApplicationRecord
       
       # Map answer IDs to answer objects (answers are already loaded for this survey)
       answer_ids_to_answers = answers.index_by(&:id)
-      
+      puts answer_ids_to_answers.inspect
       # Transform keys from IDs to Answer objects
       counts_by_id.transform_keys { |answer_id| answer_ids_to_answers[answer_id] }.compact
     end
