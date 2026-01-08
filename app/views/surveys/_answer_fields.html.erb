@@ -2,7 +2,8 @@
 <div class="nested-fields" data-nested-form-target="item" style="margin-bottom: 10px;">
   <div class="input-group">
     <%= f.input :text, 
-        label: false,
+        label_html: { class: 'sr-only' },
+        label: 'Answer text',
         placeholder: 'Answer text (e.g., Yes, No, Maybe)',
         input_html: { class: 'form-control' },
         wrapper: false %>

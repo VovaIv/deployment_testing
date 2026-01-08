@@ -18,10 +18,18 @@ class Survey < ApplicationRecord
 
   # Get count of responses per answer
   # Returns a hash like: { Answer(id: 1, text: "Yes") => 5, Answer(id: 2, text: "No") => 3 }
+  # Uses eager loading to avoid N+1 queries
   def answer_counts
-    @answer_counts ||= survey_responses.group(:answer_id).count.transform_keys do |answer_id|
-      answers.find { |a| a.id == answer_id }
-    end.compact
+    @answer_counts ||= begin
+      # Load survey_responses with answers in a single query
+      counts_by_id = survey_responses.group(:answer_id).count
+      
+      # Map answer IDs to answer objects (answers are already loaded for this survey)
+      answer_ids_to_answers = answers.index_by(&:id)
+      
+      # Transform keys from IDs to Answer objects
+      counts_by_id.transform_keys { |answer_id| answer_ids_to_answers[answer_id] }.compact
+    end
   end
 
   # Get count for a specific answer by id

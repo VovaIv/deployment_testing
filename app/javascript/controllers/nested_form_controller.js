@@ -12,9 +12,10 @@ export default class extends Controller {
     // Get the template content
     const content = this.templateTarget.content.cloneNode(true)
     
-    // Replace NEW_RECORD with a unique timestamp to ensure unique field names
-    const timestamp = new Date().getTime()
-    const html = content.firstElementChild.outerHTML.replace(/NEW_RECORD/g, timestamp)
+    // Replace NEW_RECORD with a unique identifier using random string + timestamp
+    // This prevents collisions even with rapid additions
+    const uniqueId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const html = content.firstElementChild.outerHTML.replace(/NEW_RECORD/g, uniqueId)
     
     // Insert the new field into the container
     this.containerTarget.insertAdjacentHTML('beforeend', html)
