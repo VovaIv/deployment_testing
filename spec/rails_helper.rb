@@ -8,6 +8,26 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 # that will avoid rails generators crashing because migrations haven't been run yet
 # return unless Rails.env.test?
 require 'rspec/rails'
+require 'capybara/rails'
+require 'capybara/rspec'
+
+# Configure Capybara for system tests
+Capybara.register_driver :headless_chrome do |app|
+  capabilities = Selenium::WebDriver::Chrome::Options.new
+  
+  capabilities.add_argument('--headless')
+  capabilities.add_argument('--no-sandbox')
+  capabilities.add_argument('--disable-dev-shm-usage')
+  capabilities.add_argument('--disable-gpu')
+  capabilities.add_argument('--remote-debugging-port=9222')
+  capabilities.add_argument('--window-size=1400,1400')
+  
+  Capybara::Selenium::Driver.new(app, browser: :chrome, options: capabilities)
+end
+
+Capybara.javascript_driver = :headless_chrome
+Capybara.default_driver = :headless_chrome if ENV['CAPYBARA_HEADLESS']
+
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in

@@ -22,6 +22,11 @@ jobs:
           ruby-version: 3.2.1
           bundler-cache: true
 
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
       - name: Install dependencies
         run: |
           gem install bundler
@@ -37,4 +42,5 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
+          CAPYBARA_HEADLESS: true
         run: bundle exec rspec
