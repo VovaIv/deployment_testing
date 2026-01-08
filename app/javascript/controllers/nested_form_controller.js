@@ -1,45 +1,30 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Stimulus controller for dynamically adding and removing nested form fields
-// Used for inline management of survey answer options
+// Updated to use the turbo_frame_tag pattern
 export default class extends Controller {
-  static targets = ["container", "template", "item", "destroyField"]
+  static targets = ["target", "template"]
 
-  // Add a new answer field from the template
-  add(event) {
-    event.preventDefault()
-    
-    // Get the template content
-    const content = this.templateTarget.content.cloneNode(true)
-    
-    // Replace NEW_RECORD with a unique identifier using random string + timestamp
-    // This prevents collisions even with rapid additions
-    const uniqueId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    const html = content.firstElementChild.outerHTML.replace(/NEW_RECORD/g, uniqueId)
-    
-    // Insert the new field into the container
-    this.containerTarget.insertAdjacentHTML('beforeend', html)
+  add() {
+    // Clone the template content and replace the "__INDEX__" placeholder with a unique ID
+    const content = this.templateTarget.innerHTML.replace(/__INDEX__/g, new Date().getTime())
+    this.targetTarget.insertAdjacentHTML('beforeend', content)
   }
 
-  // Remove an answer field
   remove(event) {
-    event.preventDefault()
-    
-    const item = event.target.closest('[data-nested-form-target="item"]')
-    const destroyField = item.querySelector('[data-nested-form-target="destroyField"]')
-    
-    if (destroyField && destroyField.value !== undefined) {
-      // If this is an existing record (has an ID), mark it for destruction
-      if (item.querySelector('input[name*="[id]"]')) {
-        destroyField.value = '1'
-        item.style.display = 'none'
-      } else {
-        // If this is a new record (no ID), just remove it from DOM
-        item.remove()
-      }
+    // Find the closest parent element marked for destruction and hide/remove it
+    const wrapper = event.target.closest(".answer-field") || event.target.closest("turbo-frame")
+
+    if (wrapper.dataset.newRecord == "true") {
+      // If it's a new, unsaved record, just remove from the DOM
+      wrapper.remove()
     } else {
-      // Fallback: just remove the item
-      item.remove()
+      // For existing records, set the `_destroy` field and hide it
+      const destroyField = wrapper.querySelector("input[name*='_destroy']")
+      if (destroyField) {
+        destroyField.value = "1"
+        wrapper.style.display = 'none'
+      }
     }
   }
 }

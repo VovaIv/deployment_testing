@@ -1,22 +1,16 @@
-<!-- Partial for individual answer field -->
-<div class="nested-fields" data-nested-form-target="item" style="margin-bottom: 10px;">
-  <div class="input-group">
-    <%= f.input :text, 
-        label_html: { class: 'sr-only' },
-        label: 'Answer text',
+<%= turbo_frame_tag f.object, class: "answer-field", data: { nested_form_target: "item", new_record: f.object.new_record? } do %>
+  <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+    <%= f.text_field :text, 
         placeholder: 'Answer text (e.g., Yes, No, Maybe)',
-        input_html: { class: 'form-control' },
-        wrapper: false %>
+        class: 'form-control',
+        style: 'flex: 1;' %>
     
-    <!-- Hidden field for _destroy flag -->
-    <%= f.hidden_field :_destroy, value: false, data: { nested_form_target: "destroyField" } %>
-    
-    <!-- Remove button -->
-    <button type="button" 
-            class="btn btn-danger btn-sm" 
-            data-action="click->nested-form#remove"
-            style="margin-left: 5px;">
-      Remove
-    </button>
+    <!-- Checkbox for _destroy flag -->
+    <%= f.check_box :_destroy, { data: { nested_form_target: "destroy" } }, "1", "0" %>
+    <%= f.label :_destroy, "Remove", { 
+        class: "btn btn-danger btn-sm", 
+        data: { action: "click->nested-form#remove" },
+        style: "cursor: pointer; margin: 0;"
+    } %>
   </div>
-</div>
+<% end %>

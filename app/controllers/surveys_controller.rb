@@ -7,8 +7,8 @@ class SurveysController < ApplicationController
 
   def new
     @survey = Survey.new
-    # Build initial answer fields for the form
-    2.times { @survey.answers.build }
+    # Build initial answer field for the form
+    @survey.answers.build
   end
 
   def create
@@ -45,9 +45,23 @@ class SurveysController < ApplicationController
   end
 
   def survey_params
-    params.require(:survey).permit(
-      :question,
-      answers_attributes: [:id, :text, :_destroy]
-    )
+    # Start with basic survey params
+    permitted = params.require(:survey).permit(:question, :answers_attributes => [:id, :text, :_destroy])
+    
+    # Handle answers_attributes with any keys (including dynamic ones)
+    # if params[:survey][:answers_attributes].present?
+    #   answers_attrs = {}
+    #   params[:survey][:answers_attributes].each do |key, attrs|
+    #     # Only permit the allowed fields for each answer
+    #     answers_attrs[key] = {
+    #       'id' => attrs['id'],
+    #       'text' => attrs['text'] || '', 
+    #       '_destroy' => attrs['_destroy'] || 'false'
+    #     }
+    #   end
+    #   permitted[:answers_attributes] = answers_attrs
+    # end
+    
+    permitted
   end
 end

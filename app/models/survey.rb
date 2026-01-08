@@ -10,6 +10,7 @@ class Survey < ApplicationRecord
 
   # Validations
   validates :question, presence: true
+  validate :must_have_at_least_one_answer
 
   # Statistics methods - now work with Answer model instead of boolean
   def total_responses_count
@@ -37,9 +38,17 @@ class Survey < ApplicationRecord
     survey_responses.where(answer_id: answer_id).count
   end
 
-  # Get percentage for a specific answer
+  # Get percentage for a specific answer by id
   def answer_percentage(answer_id)
     return 0 if total_responses_count.zero?
-    (answer_count(answer_id).to_f / total_responses_count * 100).round(2)
+    ((answer_count(answer_id).to_f / total_responses_count) * 100).round(1)
+  end
+
+  private
+
+  def must_have_at_least_one_answer
+    if answers.reject(&:marked_for_destruction?).empty?
+      errors.add(:answers, "must have at least one answer option")
+    end
   end
 end
