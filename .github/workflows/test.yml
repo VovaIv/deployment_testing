@@ -1,6 +1,12 @@
 name: Rails CI
 
-on: [push, pull_request]
+on:
+  push: # Run tests on every push
+    branches: 
+      - '*' # Matches all branch names
+  pull_request: # Run tests on all pull requests
+    branches: 
+      - '*' # Matches all branch names
 
 jobs:
   test:
@@ -23,7 +29,14 @@ jobs:
       - name: Install system dependencies
         run: |
           apt-get update
-          apt-get install -y git build-essential libpq-dev nodejs npm
+          apt-get install -y \
+            git \
+            build-essential \
+            libpq-dev \
+            default-libmysqlclient-dev \
+            pkg-config \
+            nodejs \
+            npm
 
       - name: Install Bundler and dependencies
         run: |
