@@ -45,23 +45,6 @@ class SurveysController < ApplicationController
   end
 
   def survey_params
-    # Start with basic survey params
-    permitted = params.require(:survey).permit(:question, :answers_attributes => [:id, :text, :_destroy])
-    
-    # Handle answers_attributes with any keys (including dynamic ones)
-    # if params[:survey][:answers_attributes].present?
-    #   answers_attrs = {}
-    #   params[:survey][:answers_attributes].each do |key, attrs|
-    #     # Only permit the allowed fields for each answer
-    #     answers_attrs[key] = {
-    #       'id' => attrs['id'],
-    #       'text' => attrs['text'] || '', 
-    #       '_destroy' => attrs['_destroy'] || 'false'
-    #     }
-    #   end
-    #   permitted[:answers_attributes] = answers_attrs
-    # end
-    
-    permitted
+    params.require(:survey).permit(:question, answers_attributes: [:id, :text, :_destroy])
   end
 end
