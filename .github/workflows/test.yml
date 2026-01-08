@@ -1,20 +1,15 @@
 name: Rails CI
 
 on:
-  push: # Run tests on every push
-    branches: 
-      - '*' # Matches all branch names
-  pull_request: # Run tests on all pull requests
-    branches: 
-      - '*' # Matches all branch names
+  push:
+  pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -22,15 +17,10 @@ jobs:
           ruby-version: 3.2.1
           bundler-cache: true
 
-      - name: Setup Chrome
-        uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: stable
-
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
-          gem install bundler
-          bundle install
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
 
       - name: Set up database
         env:

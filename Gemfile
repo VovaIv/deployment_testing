@@ -80,3 +80,7 @@ group :development do
   gem "capistrano-rbenv"
   gem "capistrano3-puma" 
 end
+
+group :test do
+  gem 'webdrivers'
+end

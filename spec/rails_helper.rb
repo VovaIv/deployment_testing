@@ -26,8 +26,13 @@ Capybara.register_driver :headless_chrome do |app|
 end
 
 Capybara.javascript_driver = :headless_chrome
-Capybara.default_driver = :headless_chrome if ENV['CAPYBARA_HEADLESS']
+Capybara.default_driver = :rack_test
+Capybara.javascript_driver = :headless_chrome
+Selenium::WebDriver::Chrome::Service.driver_path =`which chromedriver`.strip
 
+Capybara.configure do |config|
+  config.default_max_wait_time = 5
+end
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
