@@ -83,6 +83,20 @@ RSpec.configure do |config|
   # instead of true.
   config.use_transactional_fixtures = true
 
+  Capybara.register_driver :chrome do |app|
+    options = Selenium::WebDriver::Chrome::Options.new
+    options.add_argument('--headless=new') unless ENV['NOT_HEADLESS']
+    options.add_argument 'window-size=1280,1024'
+    options.add_preference(:download, prompt_for_download: false, default_directory: DownloadHelper::PATH.to_s)
+
+    Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
+  end
+
+  Capybara.configure do |c|
+    c.default_driver        = :rack_test
+    c.javascript_driver     = :chrome
+    c.always_include_port   = true
+  end
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false
 
