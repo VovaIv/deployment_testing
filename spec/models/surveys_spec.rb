@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Survey, type: :model do
   it 'is valid if we have question' do
-    survey = Survey.new(question: 'some question')
+    survey = Survey.new(question: 'some question', answers_attributes: [{ text: 'Yes' }, { text: 'No' }])
     expect(survey).to be_valid
   end
 
@@ -13,17 +13,13 @@ RSpec.describe Survey, type: :model do
   end
 
   it 'can have answers' do
-    survey = Survey.create(question: 'some question')
-    answer1 = Answer.create(text: 'Yes', survey: survey)
-    answer2 = Answer.create(text: 'No', survey: survey)
-    
-    expect(survey.answers).to include(answer1, answer2)
+    survey = Survey.create(question: 'some question', answers_attributes: [{ text: 'Yes' }, { text: 'No' }])
+   
+    expect(survey.answers.map(&:text)).to include('Yes', 'No')
   end
 
   it 'destroys answers when deleted' do
-    survey = Survey.create(question: 'some question')
-    Answer.create(text: 'Yes', survey: survey)
-    Answer.create(text: 'No', survey: survey)
+    survey = Survey.create(question: 'some question', answers_attributes: [{ text: 'Yes' }, { text: 'No' }])
     
     expect { survey.destroy }.to change { Answer.count }.by(-2)
   end
@@ -40,7 +36,8 @@ RSpec.describe Survey, type: :model do
   end
 
   it 'calculates answer counts and percentages' do
-    survey = Survey.create(question: 'some question')
+    survey = Survey.create(question: 'some question', answers_attributes: [{ text: 'Maybe' }, { text: 'Definately not' }])
+  
     yes_answer = Answer.create(text: 'Yes', survey: survey)
     no_answer = Answer.create(text: 'No', survey: survey)
     

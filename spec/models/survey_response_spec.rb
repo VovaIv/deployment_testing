@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe SurveyResponse, type: :model do
-  let!(:survey) { Survey.create(question: 'some question') }
-  let!(:answer) { Answer.create(text: 'Yes', survey: survey) }
+  let!(:survey) { Survey.create(question: 'some question', answers_attributes: [{ text: 'Yes' }, { text: 'No' }]) }
+  let!(:answer) { Answer.create(text: 'Yes of course', survey: survey) }
 
   it 'is valid if we have survey and answer' do
     survey_response = SurveyResponse.new(survey: survey, answer: answer)
