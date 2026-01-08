@@ -1,0 +1,56 @@
+# Deployment Workflow
+#
+# Purpose: Automatically deploys the application to production when code is pushed to the main branch.
+#
+# This workflow:
+# - Triggers only on pushes to the 'main' branch
+# - Sets up Ruby 3.2.1 environment
+# - Installs project dependencies using Bundler
+# - Configures SSH authentication for deployment
+# - Deploys the application to production using Capistrano
+#
+# Requirements:
+# IMPORTANT: You must add the following secret to your GitHub repository before this workflow can run:
+#
+#   AWS_PROD_SSH_KEY
+#   Description: SSH private key (PEM file contents) for authenticating with the production server
+#   How to add: Go to Repository Settings > Secrets and variables > Actions > New repository secret
+#   Value: Paste the entire contents of your PEM file (including BEGIN and END lines)
+#
+# Example PEM file format:
+# -----BEGIN RSA PRIVATE KEY-----
+# MIIEpAIBAAKCAQEA...
+# ...
+# -----END RSA PRIVATE KEY-----
+
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.1'
+          bundler-cache: true
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.AWS_PROD_SSH_KEY }}
+
+      - name: Deploy to production
+        run: bundle exec cap production deploy

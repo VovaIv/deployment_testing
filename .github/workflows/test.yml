@@ -1,0 +1,42 @@
+# Testing Workflow
+#
+# Purpose: Runs automated tests on all pushes and pull requests to ensure code quality.
+#
+# This workflow:
+# - Triggers on all pushes and pull requests to any branch
+# - Sets up Ruby 3.2.1 environment
+# - Installs project dependencies using Bundler
+# - Runs the test suite using the default Rails test command
+#
+# Requirements:
+# - None (no secrets required for testing)
+
+name: Test
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.1'
+          bundler-cache: true
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Run tests
+        run: bundle exec rake test
