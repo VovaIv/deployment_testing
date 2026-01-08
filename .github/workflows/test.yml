@@ -19,7 +19,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.3.5 # Adjust to match your Ruby version
+          ruby-version: 3.2.1 # Adjust to match your Ruby version
           bundler-cache: true
 
       - name: Install dependencies
