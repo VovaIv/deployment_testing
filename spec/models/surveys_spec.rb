@@ -20,4 +20,38 @@ RSpec.describe Survey, type: :model do
     expect(survey.percentage_yes).to eq 75.00
     expect(survey.percentage_no).to eq 25.00
   end
+
+  describe 'nested attributes for answers' do
+    it 'accepts nested attributes for answers' do
+      survey = Survey.create(
+        question: 'Test question',
+        answers_attributes: [
+          { text: 'Option 1' },
+          { text: 'Option 2' }
+        ]
+      )
+      expect(survey.answers.count).to eq(2)
+      expect(survey.answers.map(&:text)).to include('Option 1', 'Option 2')
+    end
+
+    it 'allows destroying answers through nested attributes' do
+      survey = Survey.create(question: 'Test question')
+      answer = survey.answers.create(text: 'Option 1')
+      
+      survey.update(answers_attributes: [{ id: answer.id, _destroy: '1' }])
+      
+      expect(survey.answers.count).to eq(0)
+    end
+
+    it 'rejects blank answers' do
+      survey = Survey.create(
+        question: 'Test question',
+        answers_attributes: [
+          { text: 'Option 1' },
+          { text: '' }
+        ]
+      )
+      expect(survey.answers.count).to eq(0) # blank answers rejected
+    end
+  end
 end
