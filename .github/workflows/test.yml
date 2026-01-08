@@ -19,8 +19,13 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.2.1 # Adjust to match your Ruby version
+          ruby-version: 3.2.1
           bundler-cache: true
+
+      - name: Install Chrome and ChromeDriver
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: 'stable'
 
       - name: Install dependencies
         run: |
@@ -33,6 +38,7 @@ jobs:
         run: |
           cp config/database.yml.ci config/database.yml
           bin/rails db:create db:schema:load
+
       - name: Run tests
         env:
           RAILS_ENV: test
