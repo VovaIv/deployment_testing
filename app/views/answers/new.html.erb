@@ -1,0 +1,19 @@
+<h1>Create New Answer</h1>
+
+<%= simple_form_for @answer do |f| %>
+  <%= f.input :survey_id, 
+              collection: @surveys, 
+              label_method: :question, 
+              value_method: :id,
+              prompt: "Select a survey/question",
+              label: "Survey Question" %>
+  
+  <%= f.input :text, 
+              as: :text, 
+              label: "Answer Text",
+              input_html: { rows: 4 } %>
+  
+  <%= f.button :submit, "Create Answer", class: 'btn btn-primary' %>
+<% end %>
+
+<%= link_to 'Back', root_path %>

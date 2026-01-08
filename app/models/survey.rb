@@ -1,5 +1,6 @@
 class Survey < ApplicationRecord
   has_many :survey_responses, dependent: :destroy
+  has_many :answers, dependent: :destroy
 
   validates :question, presence: true
 

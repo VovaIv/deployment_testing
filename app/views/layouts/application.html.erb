@@ -8,6 +8,11 @@
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
+  <body>
+    <div style="padding: 10px; background: #f0f0f0; margin-bottom: 20px;">
+      <%= link_to 'Home', root_path, style: 'margin-right: 15px;' %>
+      <%= link_to 'Create Answer', new_answer_path, style: 'margin-right: 15px;' %>
+    </div>
     <%= yield %>
   </body>
 </html>
