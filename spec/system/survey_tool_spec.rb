@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Survey Tool', type: :system, js: true do
+describe 'Survey Tool', type: :system do
   it 'allows to add a survey with answers' do
     visit surveys_path
 

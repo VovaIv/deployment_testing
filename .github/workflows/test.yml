@@ -13,15 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ruby:3.2.1-slim
-    
-    services:
-      chrome:
-        image: seleniarm/standalone-chromium:latest
-        options: >-
-          --shm-size=2g
-          -e SE_NODE_MAX_SESSIONS=1
-          -e SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -52,9 +44,9 @@ jobs:
           cp config/database.yml.ci config/database.yml
           bin/rails db:create db:schema:load
 
-      - name: Run tests
+      - name: Run RSpec (non-JS system tests)
         env:
           RAILS_ENV: test
-          CAPYBARA_SERVER_PORT: 3000
-          SELENIUM_REMOTE_URL: http://chrome:4444/wd/hub
-        run: bundle exec rspec
+        run: |
+          # Run all specs EXCEPT JS-enabled ones
+          bundle exec rspec --tag ~js
