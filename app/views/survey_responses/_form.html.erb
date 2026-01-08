@@ -5,7 +5,14 @@
       <p><strong>Survey Question:</strong> <%= survey.question %></p>
     </div>
     <div class="analytics-item">
-      <%= f.input :answer, as: :radio_buttons, collection: [['Yes', 'true'], ['No', 'false']] %>
+      <%# Updated to use answer_id with collection from survey.answers %>
+      <%# Displays the predefined answer options for this survey %>
+      <%= f.input :answer_id, 
+                  as: :radio_buttons, 
+                  collection: survey.answers,
+                  label_method: :text,
+                  value_method: :id,
+                  label: 'Select your answer:' %>
     </div>
     </p>
     <div class="survey-actions">
