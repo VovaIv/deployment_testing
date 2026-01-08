@@ -34,14 +34,12 @@ jobs:
 
       - name: Set up Ruby 3.2.1
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ruby=3.1.* ruby-dev
-          # Alternatively, use a Ruby version manager like RVM or rbenv
-          # gem install bundler
+          apt-get update
+          apt-get install -y ruby=3.1.* ruby-dev build-essential libpq-dev
+          gem install bundler
 
       - name: Install dependencies
         run: |
-          gem install bundler
           bundle install
 
       - name: Set up database
