@@ -23,10 +23,7 @@ jobs:
       - name: Install Chromium & Chromedriver
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            chromium \
-            chromium-chromedriver
-
+          sudo apt-get install -y chromium chromium-chromedriver
           which chromium
           which chromedriver
           chromium --version
@@ -45,4 +42,5 @@ jobs:
         env:
           RAILS_ENV: test
           CAPYBARA_HEADLESS: true
+          CHROME_BIN: /usr/bin/chromium
         run: bundle exec rspec
