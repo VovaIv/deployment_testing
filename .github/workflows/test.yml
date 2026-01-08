@@ -7,40 +7,34 @@ on:
   pull_request: # Run tests on all pull requests
     branches: 
       - '*' # Matches all branch names
+
 jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.2.1
+          ruby-version: 3.3.5 # Adjust to match your Ruby version
           bundler-cache: true
 
-      - name: Install Chromium & Chromedriver
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium chromium-chromedriver
-          which chromium
-          which chromedriver
-          chromium --version
-          chromedriver --version
+          gem install bundler
+          bundle install
 
       - name: Set up database
         env:
           RAILS_ENV: test
-          CAPYBARA_HEADLESS: true
-          CHROME_BIN: /usr/bin/chromium
         run: |
           cp config/database.yml.ci config/database.yml
           bin/rails db:create db:schema:load
-
       - name: Run tests
         env:
           RAILS_ENV: test
-          CAPYBARA_HEADLESS: true
-          CHROME_BIN: /usr/bin/chromium
         run: bundle exec rspec
