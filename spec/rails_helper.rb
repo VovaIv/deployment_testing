@@ -11,18 +11,22 @@ require 'capybara/rspec'
 
 # Configure Capybara
 Capybara.register_driver :remote_chrome do |app|
-  url = ENV.fetch("SELENIUM_REMOTE_URL", "http://localhost:4444/wd/hub")
+  url = ENV.fetch("SELENIUM_REMOTE_URL", "http://chrome:4444/wd/hub") # must match your service name
   capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
     "goog:chromeOptions" => {
       args: %w[headless=new no-sandbox disable-dev-shm-usage window-size=1400,1400]
     }
   )
-  Capybara::Selenium::Driver.new(app, browser: :remote, url: url, capabilities: capabilities)
+  Capybara::Selenium::Driver.new(
+    app,
+    browser: :remote,
+    url: url,
+    capabilities: capabilities
+  )
 end
 
 Capybara.javascript_driver = :remote_chrome
 Capybara.default_driver = :rack_test
-Capybara.default_max_wait_time = 5
 
 # Add additional requires below this line. Rails is not loaded until this point!
 
