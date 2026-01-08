@@ -24,6 +24,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: simple_survey_tool_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout code
@@ -38,5 +48,16 @@ jobs:
       - name: Install dependencies
         run: bundle install
 
+      - name: Set up database
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: mysql2://root:password@127.0.0.1:3306/simple_survey_tool_test
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:schema:load
+
       - name: Run tests
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: mysql2://root:password@127.0.0.1:3306/simple_survey_tool_test
         run: bundle exec rspec
