@@ -1,9 +1,12 @@
 name: Rails CI
 
 on:
-  push:
-  pull_request:
-
+  push: # Run tests on every push
+    branches: 
+      - '*' # Matches all branch names
+  pull_request: # Run tests on all pull requests
+    branches: 
+      - '*' # Matches all branch names
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -17,22 +20,23 @@ jobs:
           ruby-version: 3.2.1
           bundler-cache: true
 
-      - name: Install Chrome & ChromeDriver
+      - name: Install Chromium & Chromedriver
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            google-chrome-stable \
+            chromium-browser \
             chromium-chromedriver
 
+          which chromium-browser
           which chromedriver
+          chromium-browser --version
           chromedriver --version
-          google-chrome --version
 
       - name: Set up database
         env:
           RAILS_ENV: test
           CAPYBARA_HEADLESS: true
-          CHROME_BIN: /usr/bin/google-chrome
+          CHROME_BIN: /usr/bin/chromium-browser
         run: |
           cp config/database.yml.ci config/database.yml
           bin/rails db:create db:schema:load
