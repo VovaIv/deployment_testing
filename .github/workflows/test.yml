@@ -17,14 +17,22 @@ jobs:
           ruby-version: 3.2.1
           bundler-cache: true
 
-      - name: Install system dependencies
+      - name: Install Chrome & ChromeDriver
         run: |
           sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y \
+            google-chrome-stable \
+            chromium-chromedriver
+
+          which chromedriver
+          chromedriver --version
+          google-chrome --version
 
       - name: Set up database
         env:
           RAILS_ENV: test
+          CAPYBARA_HEADLESS: true
+          CHROME_BIN: /usr/bin/google-chrome
         run: |
           cp config/database.yml.ci config/database.yml
           bin/rails db:create db:schema:load

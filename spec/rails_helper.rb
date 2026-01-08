@@ -13,21 +13,28 @@ require 'capybara/rspec'
 
 # Configure Capybara for system tests
 Capybara.register_driver :headless_chrome do |app|
-  capabilities = Selenium::WebDriver::Chrome::Options.new
-  
-  capabilities.add_argument('--headless')
-  capabilities.add_argument('--no-sandbox')
-  capabilities.add_argument('--disable-dev-shm-usage')
-  capabilities.add_argument('--disable-gpu')
-  capabilities.add_argument('--remote-debugging-port=9222')
-  capabilities.add_argument('--window-size=1400,1400')
-  
-  Capybara::Selenium::Driver.new(app, browser: :chrome, options: capabilities)
+  options = Selenium::WebDriver::Chrome::Options.new
+
+  options.add_argument('--headless=new') # REQUIRED for Chrome >= 109
+  options.add_argument('--no-sandbox')
+  options.add_argument('--disable-dev-shm-usage')
+  options.add_argument('--disable-gpu')
+  options.add_argument('--window-size=1400,1400')
+
+  Capybara::Selenium::Driver.new(
+    app,
+    browser: :chrome,
+    options: options
+  )
 end
 
-Capybara.javascript_driver = :headless_chrome
 Capybara.default_driver = :rack_test
 Capybara.javascript_driver = :headless_chrome
+
+Capybara.configure do |config|
+  config.default_max_wait_time = 5
+end
+
 Selenium::WebDriver::Chrome::Service.driver_path =`which chromedriver`.strip
 
 Capybara.configure do |config|
