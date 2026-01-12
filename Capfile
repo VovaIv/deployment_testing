@@ -14,7 +14,10 @@ require "capistrano/rails/migrations"
 require "capistrano/bundler"
 require "capistrano/rbenv"
 
-# Puma (systemd)
+# Puma (IMPORTANT: require BEFORE install_plugin)
+require "capistrano/puma"
+require "capistrano/puma/systemd"
+
 install_plugin Capistrano::Puma
 install_plugin Capistrano::Puma::Systemd
 
