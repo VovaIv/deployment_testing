@@ -8,18 +8,18 @@
       <span class="label">Total Responses:</span>
       <span class="value"><%= survey.total_responses_count %></span>
     </div>
-    <div class="analytics-item">
-      <span class="label">Yes:</span>
-      <span class="value"><%= survey.percentage_yes %>%</span>
-    </div>
-    <div class="analytics-item">
-      <span class="label">No:</span>
-      <span class="value"><%= survey.percentage_no %>%</span>
-    </div>
+    
+    <% survey.answers.each do |answer| %>
+      <div class="analytics-item">
+        <span class="label"><%= answer.text %>:</span>
+        <span class="value"><%= survey.answer_count(answer.id) %> (<%= survey.answer_percentage(answer.id) %>%)</span>
+      </div>
+    <% end %>
   </div>
 
   <div class="survey-actions">
     <%= link_to "Respond", new_survey_survey_response_path(survey), data: { turbo_frame: "survey_#{survey.id}", turbo_stream: true }, class: 'btn btn-secondary respond-btn' %>
+    <%= link_to "Edit", edit_survey_path(survey), data: { turbo_frame: "_top" }, class: 'btn btn-primary edit-btn' %>
     <% if survey.total_responses_count.zero? %>
       <%= link_to "Delete", survey_path(survey), data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, class: 'btn btn-danger delete-btn' %>
     <% else %>

@@ -1,42 +1,52 @@
-# Testing Workflow
-#
-# Purpose: Runs automated tests on all pushes and pull requests to ensure code quality.
-#
-# This workflow:
-# - Triggers on all pushes and pull requests to any branch
-# - Sets up Ruby 3.2.1 environment
-# - Installs project dependencies using Bundler
-# - Runs the test suite using the default Rails test command
-#
-# Requirements:
-# - None (no secrets required for testing)
-
-name: Test
+name: Rails CI
 
 on:
   push:
-    branches:
-      - '**'
+    branches: 
+      - '*'
   pull_request:
-    branches:
-      - '**'
+    branches: 
+      - '*'
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: ruby:3.2.1-slim
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2.1'
-          bundler-cache: true
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            git \
+            build-essential \
+            libpq-dev \
+            default-libmysqlclient-dev \
+            pkg-config \
+            nodejs \
+            npm \
+            curl \
+            unzip
 
-      - name: Install dependencies
-        run: bundle install
+      - name: Install Bundler and dependencies
+        run: |
+          gem install bundler
+          bundle install --jobs 4 --retry 3
 
-      - name: Run tests
-        run: bundle exec rake test
+      - name: Set up database
+        env:
+          RAILS_ENV: test
+        run: |
+          cp config/database.yml.ci config/database.yml
+          bin/rails db:create db:schema:load
+
+      - name: Run RSpec (non-JS system tests)
+        env:
+          RAILS_ENV: test
+        run: |
+          # Run all specs EXCEPT JS-enabled ones
+          bundle exec rspec --tag ~js

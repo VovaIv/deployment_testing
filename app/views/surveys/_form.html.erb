@@ -1,11 +1,48 @@
 <div class="form-container">
-  <%= simple_form_for survey do |f| %>
+  <%= form_with model: survey, html: { data: { controller: "nested-form" } } do |f| %>
+    
+    <!-- Display validation errors -->
+    <% if survey.errors.any? %>
+      <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+        <ul style="margin: 0; padding-left: 20px;">
+          <% survey.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
     <div class="form-group">
-      <%= f.input :question, input_html: { class: 'form-control', placeholder: 'Enter your question here' }, wrapper: false %>
+      <%= f.text_field :question, class: 'form-control', placeholder: 'Enter your question here' %>
     </div>
-    </p>
+
+    <div class="form-group">
+      <label class="form-label">Answer Options</label>
+      
+      <!-- Template for new answer fields (hidden) -->
+      <template data-nested-form-target="template">
+        <%= f.fields_for :answers, Answer.new, child_index: '__INDEX__' do |answer_form| %>
+          <%= render 'answer_fields', f: answer_form %>
+        <% end %>
+      </template>
+
+      <!-- Target where answer fields will be inserted -->
+      <div data-nested-form-target="target">
+        <%= f.fields_for :answers do |answer_form| %>
+          <%= render 'answer_fields', f: answer_form %>
+        <% end %>
+      </div>
+
+      <!-- Button to add more answer fields -->
+      <button type="button" 
+              class="btn btn-secondary btn-sm mt-2" 
+              data-action="click->nested-form#add">
+        + Add Answer Option
+      </button>
+    </div>
+
     <div class="form-actions">
-      <%= f.button :submit, class: 'btn btn-primary' %>
+      <%= f.submit class: 'btn btn-primary' %>
       <%= link_to 'Back to Surveys', surveys_path, class: 'btn btn-secondary' %>
     </div>
   <% end %>

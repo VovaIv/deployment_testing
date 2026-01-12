@@ -1,0 +1,16 @@
+<%= turbo_frame_tag f.object, class: "answer-field", data: { nested_form_target: "item", new_record: f.object.new_record? } do %>
+  <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+    <%= f.text_field :text, 
+        placeholder: 'Answer text (e.g., Yes, No, Maybe)',
+        class: 'form-control',
+        style: 'flex: 1;' %>
+    
+    <!-- Checkbox for _destroy flag -->
+    <%= f.check_box :_destroy, { data: { nested_form_target: "destroy" } }, "1", "0" %>
+    <%= f.label :_destroy, "Remove", { 
+        class: "btn btn-danger btn-sm", 
+        data: { action: "click->nested-form#remove" },
+        style: "cursor: pointer; margin: 0;"
+    } %>
+  </div>
+<% end %>
