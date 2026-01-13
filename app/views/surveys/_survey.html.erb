@@ -19,11 +19,13 @@
 
   <div class="survey-actions">
     <%= link_to "Respond", new_survey_survey_response_path(survey), data: { turbo_frame: "survey_#{survey.id}", turbo_stream: true }, class: 'btn btn-secondary respond-btn' %>
-    <%= link_to "Edit", edit_survey_path(survey), data: { turbo_frame: "_top" }, class: 'btn btn-primary edit-btn' %>
-    <% if survey.total_responses_count.zero? %>
-      <%= link_to "Delete", survey_path(survey), data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, class: 'btn btn-danger delete-btn' %>
-    <% else %>
-      <span class="delete-disabled-message">Cannot delete: Survey has responses.</span>
+    <% if current_user.admin? %>
+      <%= link_to "Edit", edit_survey_path(survey), data: { turbo_frame: "_top" }, class: 'btn btn-primary edit-btn' %>
+      <% if survey.total_responses_count.zero? %>
+        <%= link_to "Delete", survey_path(survey), data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, class: 'btn btn-danger delete-btn' %>
+      <% else %>
+        <span class="delete-disabled-message">Cannot delete: Survey has responses.</span>
+      <% end %>
     <% end %>
   </div>
 </turbo-frame>
