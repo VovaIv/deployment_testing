@@ -7,6 +7,12 @@ require 'rspec/rails'
 require 'capybara/rails'
 require 'capybara/rspec'
 
+# Include Devise test helpers
+RSpec.configure do |config|
+  config.include Devise::Test::IntegrationHelpers, type: :system
+  config.include Devise::Test::IntegrationHelpers, type: :request
+end
+
 RSpec.configure do |config|
   config.before(:each, type: :system) do |example|
     if example.metadata[:js] != true
