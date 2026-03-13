@@ -156,7 +156,7 @@ bundle exec rspec spec/system/       # system specs only
 
 ### Capistrano (primary — production on EC2)
 - Config: `config/deploy.rb`, `config/deploy/production.rb`
-- Server: `44.204.219.122` (AWS EC2), user `ubuntu`, SSH key `~/Downloads/vovan.pem`
+- Server: `3.235.132.124` (AWS EC2), user `ubuntu`, SSH key `~/Downloads/vovan.pem`
 - Deploy path: `/home/ubuntu/deployment_testing`
 - Ruby version: **3.2.1** (managed by rbenv)
 - Process manager: Puma via systemd
