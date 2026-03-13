@@ -8,7 +8,7 @@ set :deploy_to, "/home/ubuntu/deployment_testing"
 
 # Ruby version
 set :rbenv_type, :user
-set :rbenv_ruby, "3.2.1"
+set :rbenv_ruby, "3.2.3"
 
 # Shared files & directories (persist across deploys)
 set :linked_files, fetch(:linked_files, []).push(
