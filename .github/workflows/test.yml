@@ -12,11 +12,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: ruby:3.2.1-slim
+      image: ruby:3.2.3-slim
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install system dependencies
         run: |
