@@ -1,6 +1,12 @@
 require 'rails_helper'
 
 describe 'Survey Tool', type: :system, js: true do
+  let!(:admin_user) { User.create!(email: 'admin@test.com', password: 'password123', password_confirmation: 'password123', role: 'admin') }
+
+  before do
+    sign_in admin_user
+  end
+
   it 'allows to add a survey with answers' do
     visit surveys_path
 
