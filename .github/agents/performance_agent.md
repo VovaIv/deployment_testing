@@ -184,3 +184,4 @@ INFO — general recommendation
 - Large datasets handled safely
 - Proper indexing in migrations
 - Opportunities for caching identified
+- Background jobs used for heavy work
