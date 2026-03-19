@@ -97,52 +97,89 @@ Build a Markdown comment that incorporates output from all three subagents. Stru
 
 ### 6. Post the review to GitHub
 
-**Never write the review body to a temp file and never use `gh pr review --body-file` or `--body`.** Shell heredocs that write files are unreliable in this terminal environment and produce corrupted output. Instead, build the review body as a Python string and post it via `gh api --input -` with JSON piped through stdin.
+**Never use shell heredocs or `gh pr review --body` / `--body-file`.** Heredocs are corrupted by the terminal wrapper in this environment, producing garbage output. The only reliable approach is to build the review body as a Python list of strings, write it to a temp JSON file, and then post it with `gh api --input`.
 
 Choose the event type based on findings:
-- If any **CRITICAL** findings → use `REQUEST_CHANGES`
+- If any **MAJOR** or **CRITICAL** findings → use `REQUEST_CHANGES`
 - Otherwise → use `COMMENT`
 
-Use this exact pattern:
+**Use this exact pattern — no heredocs, no stdin piping:**
 
 ```python
 python3 -c "
-import subprocess, json, sys
+import subprocess, json, re
 
-body = sys.stdin.read()
-event = 'REQUEST_CHANGES'  # or 'COMMENT'
-payload = json.dumps({'body': body, 'event': event})
+# Build the review body as a list of lines (never use a heredoc or multiline string).
+# Each element is one line of the Markdown review.
+body_lines = [
+    '## Code Review — PR #<number>: <title>',
+    '',
+    '> **Changes requested** — one or more MAJOR findings must be resolved before this PR can be merged.',
+    '',
+    '<summary paragraph>',
+    '',
+    '---',
+    '',
+    '### Findings',
+    '',
+    '#### [MAJOR] <Finding title>',
+    '**File:** \`path/to/file.rb\`',
+    '',
+    '<finding description>',
+    '',
+    # ... add all finding sections as individual string elements ...
+    '',
+    '---',
+    '',
+    '### Performance Report',
+    '',
+    # ... performance findings ...
+    '',
+    '---',
+    '',
+    '### Security Audit Report',
+    '',
+    # ... security findings and OWASP table ...
+    '',
+    '---',
+    '',
+    '### Review Checklist',
+    '',
+    '- [x] <item>',
+    '- [ ] <item>',
+    '',
+    '---',
+    '*Review posted automatically by PR GitHub Commenter agent.*',
+]
 
+body = '\n'.join(body_lines)
+
+# Write to temp file — do NOT use heredoc
+with open('/tmp/pr_review_payload.json', 'w') as f:
+    json.dump({'body': body, 'event': 'REQUEST_CHANGES'}, f)
+
+# Post using --input (not --input -)
 result = subprocess.run(
     ['gh', 'api', 'repos/<OWNER>/<REPO>/pulls/<PR_NUMBER>/reviews',
-     '--method', 'POST', '--input', '-'],
-    input=payload.encode(), capture_output=True
+     '--method', 'POST', '--input', '/tmp/pr_review_payload.json'],
+    capture_output=True
 )
 
-import re
 out = result.stdout.decode()
 review_id = re.search(r'\"id\":(\d+)', out)
 url = re.search(r'\"html_url\":\"([^\"]+pullrequestreview[^\"]+)\"', out)
 print('Review ID:', review_id.group(1) if review_id else 'unknown')
 print('URL:', url.group(1) if url else 'unknown')
-print(result.stderr.decode(), end='')
-" << 'REVIEW_BODY'
-## Code Review — PR #<number>: <title>
-
-<full review body here — paste all sections>
-
----
-*Review posted automatically by PR GitHub Commenter agent.*
-REVIEW_BODY
+if result.returncode != 0:
+    print('STDERR:', result.stderr.decode())
+"
 ```
 
-Substitute the actual `<OWNER>/<REPO>`, `<PR_NUMBER>`, event type, and full review body before running.
-
-Include this note at the top of the body when using `REQUEST_CHANGES`:
-
-```
-> **Changes requested** — one or more CRITICAL findings must be resolved before this PR can be merged.
-```
+**Key rules for building `body_lines`:**
+- Every line of the review is a separate string element in the list
+- Use `'\n'.join(body_lines)` to assemble the final body — never concatenate with multiline Python strings or triple-quotes that span across large blocks
+- Escape any backticks inside Python strings as `\\\`...\\\`` or use single-quoted Python strings to avoid escaping
+- Substitute `<OWNER>/<REPO>`, `<PR_NUMBER>`, event type, and all review content before running
 
 ### 7. Post inline comments for CRITICAL and MAJOR findings
 
@@ -175,8 +212,9 @@ Report to the user: the review type posted (comment or request-changes), how man
 - DO NOT edit any source files — this is a read-only review that posts to GitHub only
 - DO NOT approve the PR — post a comment review or request changes depending on severity
 - DO NOT retry `gh` commands more than once if they fail; report the error to the user instead
-- **NEVER** write the review body to a temp file via shell heredoc — use the `python3 -c "..." << 'REVIEW_BODY'` piping pattern from Step 6
-- **NEVER** use `gh pr review --body-file` or `gh pr review --body` — use `gh api ... --input -` with JSON from Python instead
+- **NEVER** use shell heredocs (`<< 'MARKER'`) for any content — they are corrupted by the terminal wrapper in this environment
+- **NEVER** use `gh pr review --body-file`, `gh pr review --body`, or `gh api --input -` with piped stdin
+- **ALWAYS** build the review body as a Python `body_lines` list joined with `'\n'.join(...)`, write to `/tmp/pr_review_payload.json`, and post with `gh api --input /tmp/pr_review_payload.json`
 - If `gh auth status` fails, stop immediately and tell the user to run `gh auth login`
 
 ## Error Handling
@@ -188,4 +226,4 @@ Report to the user: the review type posted (comment or request-changes), how man
 | PR not found | Report the error and ask user to confirm PR number and repo |
 | git fetch fails | Report that the PR ref could not be fetched |
 | Inline comment fails (e.g. line not in diff) | Skip that inline comment, note it in the final summary |
-| Shell file write produces garbage / file not found | Do not retry — switch immediately to the `python3` piping pattern from Step 6 |
+| Shell heredoc or piped stdin produces garbage / file not found | Do not retry — switch immediately to the `body_lines` list + temp file pattern from Step 6 |
