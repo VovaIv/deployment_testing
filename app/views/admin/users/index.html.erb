@@ -1,0 +1,36 @@
+<div style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
+  <h1>Users</h1>
+
+  <div style="margin-bottom: 1rem;">
+    <%= link_to 'New User', new_admin_user_path, class: 'btn btn-primary' %>
+  </div>
+
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="background-color: #f8f9fa;">
+        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid #dee2e6;">Email</th>
+        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid #dee2e6;">Role</th>
+        <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid #dee2e6;">Created At</th>
+        <th style="padding: 0.75rem; border-bottom: 2px solid #dee2e6;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @users.each do |user| %>
+        <tr style="border-bottom: 1px solid #dee2e6;">
+          <td style="padding: 0.75rem;"><%= user.email %></td>
+          <td style="padding: 0.75rem;">
+            <% if user.admin? %>
+              <span style="background-color: #007bff; color: white; padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.85rem;">Admin</span>
+            <% else %>
+              <span style="background-color: #6c757d; color: white; padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.85rem;">User</span>
+            <% end %>
+          </td>
+          <td style="padding: 0.75rem;"><%= user.created_at.strftime('%Y-%m-%d %H:%M') %></td>
+          <td style="padding: 0.75rem; text-align: right;">
+            <%= link_to 'Edit', edit_admin_user_path(user), class: 'btn btn-secondary btn-sm' %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
