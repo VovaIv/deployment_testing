@@ -2,10 +2,11 @@ class Admin::UsersController < ApplicationController
   include AdminAuthorizable
 
   before_action :require_admin
-  before_action :set_user, only: [:edit, :update]
+  before_action :set_user, only: [:edit, :update, :destroy]
 
   def index
     @users = User.select(:id, :email, :role, :created_at).order(:email).paginate(page: params[:page], per_page: 25)
+    @admin_count = User.where(role: 'admin').count
   end
 
   def new
@@ -43,6 +44,23 @@ class Admin::UsersController < ApplicationController
       Rails.logger.warn("[ADMIN AUDIT] #{current_user.email} failed to update user #{@user.email}: #{@user.errors.full_messages.join(', ')}")
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def destroy
+    if @user == current_user
+      redirect_to admin_users_path, alert: 'You cannot delete your own account.'
+      return
+    end
+
+    if @user.admin? && User.lock.where(role: 'admin').where.not(id: @user.id).count < 1
+      redirect_to admin_users_path, alert: 'Cannot delete the last admin account.'
+      return
+    end
+
+    email = @user.email
+    @user.destroy
+    Rails.logger.info("[ADMIN AUDIT] #{current_user.email} deleted user #{email}")
+    redirect_to admin_users_path, notice: 'User deleted successfully.'
   end
 
   private

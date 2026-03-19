@@ -96,6 +96,27 @@ describe 'Admin User Management', type: :system do
       expect(admin_user.reload.role).to eq('admin')
     end
 
+    it 'can delete a regular user' do
+      visit admin_users_path
+      expect(page).to have_content('user@test.com')
+      accept_confirm do
+        click_link('Delete', href: admin_user_path(regular_user))
+      end
+      expect(page).to have_content('User deleted successfully')
+      expect(page).not_to have_content('user@test.com')
+    end
+
+    it 'cannot delete own account' do
+      visit admin_users_path
+      expect(page).not_to have_link('Delete', href: admin_user_path(admin_user))
+    end
+
+    it 'cannot delete the last admin account' do
+      visit admin_users_path
+      # regular_user is not an admin, admin_user is the only admin — no delete button for admin_user
+      expect(page).not_to have_link('Delete', href: admin_user_path(admin_user))
+    end
+
     it 'cannot demote the last admin account' do
       # Create a second admin so admin_user can demote them.
       # After demotion, admin_user becomes the only admin.
