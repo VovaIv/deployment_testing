@@ -17,8 +17,8 @@ class User < ApplicationRecord
 
   def cannot_demote_last_admin
     return unless role_changed? && role == 'user' && role_was == 'admin'
-    return unless User.where(role: 'admin').limit(2).count <= 1
 
-    errors.add(:role, 'cannot remove the last admin account')
+    remaining = User.lock.where(role: 'admin').where.not(id: id).count
+    errors.add(:role, 'cannot remove the last admin account') if remaining < 1
   end
 end

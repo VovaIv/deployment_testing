@@ -1,6 +1,7 @@
 class Admin::UsersController < ApplicationController
   include AdminAuthorizable
 
+  before_action :require_admin
   before_action :set_user, only: [:edit, :update]
 
   def index
@@ -17,6 +18,7 @@ class Admin::UsersController < ApplicationController
       Rails.logger.info("[ADMIN AUDIT] #{current_user.email} created user #{@user.email} with role: #{@user.role}")
       redirect_to admin_users_path, notice: 'User created successfully.'
     else
+      Rails.logger.warn("[ADMIN AUDIT] #{current_user.email} failed to create user: #{@user.errors.full_messages.join(', ')}")
       render :new, status: :unprocessable_entity
     end
   end
@@ -38,6 +40,7 @@ class Admin::UsersController < ApplicationController
       Rails.logger.info("[ADMIN AUDIT] #{current_user.email} updated user #{@user.email} — role: #{@user.role}")
       redirect_to admin_users_path, notice: 'User updated successfully.'
     else
+      Rails.logger.warn("[ADMIN AUDIT] #{current_user.email} failed to update user #{@user.email}: #{@user.errors.full_messages.join(', ')}")
       render :edit, status: :unprocessable_entity
     end
   end
