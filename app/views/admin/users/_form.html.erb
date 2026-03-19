@@ -16,7 +16,12 @@
 
   <div class="form-group" style="margin-bottom: 1rem;">
     <%= f.label :role, style: 'display: block; margin-bottom: 0.5rem; font-weight: bold;' %>
-    <%= f.select :role, [['User', 'user'], ['Admin', 'admin']], {}, class: 'form-control', style: 'width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px;' %>
+    <% if user == current_user %>
+      <p style="color: #6c757d; font-size: 0.9rem; margin: 0;">Your own role cannot be changed.</p>
+      <%= f.hidden_field :role %>
+    <% else %>
+      <%= f.select :role, [['User', 'user'], ['Admin', 'admin']], {}, class: 'form-control', style: 'width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px;' %>
+    <% end %>
   </div>
 
   <div class="form-group" style="margin-bottom: 1rem;">
