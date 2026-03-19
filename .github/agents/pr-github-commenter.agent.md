@@ -97,22 +97,48 @@ Build a Markdown comment that incorporates output from all three subagents. Stru
 
 ### 6. Post the review to GitHub
 
-Write the formatted body to a temporary file. Then choose the review type based on findings:
+**Never write the review body to a temp file and never use `gh pr review --body-file` or `--body`.** Shell heredocs that write files are unreliable in this terminal environment and produce corrupted output. Instead, build the review body as a Python string and post it via `gh api --input -` with JSON piped through stdin.
 
-- If any **CRITICAL** findings were found → use `--request-changes` (blocks merging)
-- Otherwise → use `--comment` (neutral)
+Choose the event type based on findings:
+- If any **CRITICAL** findings → use `REQUEST_CHANGES`
+- Otherwise → use `COMMENT`
 
+Use this exact pattern:
+
+```python
+python3 -c "
+import subprocess, json, sys
+
+body = sys.stdin.read()
+event = 'REQUEST_CHANGES'  # or 'COMMENT'
+payload = json.dumps({'body': body, 'event': event})
+
+result = subprocess.run(
+    ['gh', 'api', 'repos/<OWNER>/<REPO>/pulls/<PR_NUMBER>/reviews',
+     '--method', 'POST', '--input', '-'],
+    input=payload.encode(), capture_output=True
+)
+
+import re
+out = result.stdout.decode()
+review_id = re.search(r'\"id\":(\d+)', out)
+url = re.search(r'\"html_url\":\"([^\"]+pullrequestreview[^\"]+)\"', out)
+print('Review ID:', review_id.group(1) if review_id else 'unknown')
+print('URL:', url.group(1) if url else 'unknown')
+print(result.stderr.decode(), end='')
+" << 'REVIEW_BODY'
+## Code Review — PR #<number>: <title>
+
+<full review body here — paste all sections>
+
+---
+*Review posted automatically by PR GitHub Commenter agent.*
+REVIEW_BODY
 ```
-# With CRITICAL findings:
-gh pr review <PR_NUMBER> --repo <OWNER/REPO> --request-changes --body-file /tmp/pr_review_<PR_NUMBER>.md
 
-# Without CRITICAL findings:
-gh pr review <PR_NUMBER> --repo <OWNER/REPO> --comment --body-file /tmp/pr_review_<PR_NUMBER>.md
-```
+Substitute the actual `<OWNER>/<REPO>`, `<PR_NUMBER>`, event type, and full review body before running.
 
-Use `--body-file` instead of `--body` to avoid shell quoting issues with long markdown content.
-
-Include a note at the top of the comment body when requesting changes:
+Include this note at the top of the body when using `REQUEST_CHANGES`:
 
 ```
 > **Changes requested** — one or more CRITICAL findings must be resolved before this PR can be merged.
@@ -149,7 +175,8 @@ Report to the user: the review type posted (comment or request-changes), how man
 - DO NOT edit any source files — this is a read-only review that posts to GitHub only
 - DO NOT approve the PR — post a comment review or request changes depending on severity
 - DO NOT retry `gh` commands more than once if they fail; report the error to the user instead
-- Always use `--body-file` over `--body` for multi-line content to avoid shell injection
+- **NEVER** write the review body to a temp file via shell heredoc — use the `python3 -c "..." << 'REVIEW_BODY'` piping pattern from Step 6
+- **NEVER** use `gh pr review --body-file` or `gh pr review --body` — use `gh api ... --input -` with JSON from Python instead
 - If `gh auth status` fails, stop immediately and tell the user to run `gh auth login`
 
 ## Error Handling
@@ -161,3 +188,4 @@ Report to the user: the review type posted (comment or request-changes), how man
 | PR not found | Report the error and ask user to confirm PR number and repo |
 | git fetch fails | Report that the PR ref could not be fetched |
 | Inline comment fails (e.g. line not in diff) | Skip that inline comment, note it in the final summary |
+| Shell file write produces garbage / file not found | Do not retry — switch immediately to the `python3` piping pattern from Step 6 |
