@@ -29,21 +29,15 @@ RSpec.describe 'Admin::Users', type: :request do
       expect(User.exists?(admin_user.id)).to be true
     end
 
-    it 'prevents deleting the last admin account via direct request' do
+    it 'allows deleting a non-sole admin (last-admin guard does not fire)' do
       second_admin = User.create!(email: 'admin2@test.com', password: 'password123',
                                   password_confirmation: 'password123', role: 'admin')
-      # Force admin_user's role to 'user' directly (bypassing model validation) so that
-      # second_admin becomes the sole admin. The self-delete guard fires first when
-      # second_admin tries to delete themselves, confirming the last admin is protected.
-      # (The last-admin guard is the fallback for race-condition scenarios.)
-      admin_user.update_column(:role, 'user')
-      sign_in second_admin
-
+      # Two admins exist; deleting second_admin leaves admin_user as sole admin — allowed.
       delete admin_user_path(second_admin)
       expect(response).to redirect_to(admin_users_path)
       follow_redirect!
-      expect(response.body).to include('You cannot delete your own account')
-      expect(User.exists?(second_admin.id)).to be true
+      expect(response.body).to include('User deleted successfully')
+      expect(User.exists?(second_admin.id)).to be false
     end
   end
 end

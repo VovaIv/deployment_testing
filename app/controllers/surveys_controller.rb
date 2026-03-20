@@ -2,7 +2,7 @@ class SurveysController < ApplicationController
   include AdminAuthorizable
 
   before_action :set_survey, only: [:edit, :update, :destroy]
-  before_action :require_admin, only: [:edit, :update, :destroy]
+  before_action :require_admin, only: [:new, :create, :edit, :update, :destroy]
 
   def index
     @surveys = Survey.all.paginate(page: params[:page], per_page: 5)

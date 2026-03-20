@@ -52,15 +52,22 @@ class Admin::UsersController < ApplicationController
       return
     end
 
-    if @user.admin? && User.lock.where(role: 'admin').where.not(id: @user.id).count < 1
-      redirect_to admin_users_path, alert: 'Cannot delete the last admin account.'
-      return
+    last_admin_blocked = false
+
+    ApplicationRecord.transaction do
+      if @user.admin? && User.lock.where(role: 'admin').where.not(id: @user.id).count < 1
+        last_admin_blocked = true
+      else
+        @user.destroy
+        Rails.logger.info("[ADMIN AUDIT] #{current_user.email} deleted user #{@user.email}")
+      end
     end
 
-    email = @user.email
-    @user.destroy
-    Rails.logger.info("[ADMIN AUDIT] #{current_user.email} deleted user #{email}")
-    redirect_to admin_users_path, notice: 'User deleted successfully.'
+    if last_admin_blocked
+      redirect_to admin_users_path, alert: 'Cannot delete the last admin account.'
+    else
+      redirect_to admin_users_path, notice: 'User deleted successfully.'
+    end
   end
 
   private
