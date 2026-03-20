@@ -1,6 +1,6 @@
 class SurveysController < ApplicationController
-  before_action :require_admin, only: %i[new create edit update destroy]
   before_action :set_survey, only: %i[edit update destroy]
+  before_action :require_admin, only: %i[new create edit update destroy]
 
   def index
     @surveys = Survey.all.paginate(page: params[:page], per_page: 5)
