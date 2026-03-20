@@ -39,19 +39,15 @@ describe 'Admin User Management', type: :system do
 
       fill_in 'user[email]', with: 'newuser@test.com'
       select 'User', from: 'user[role]'
-      fill_in 'user[password]', with: 'password123'
-      fill_in 'user[password_confirmation]', with: 'password123'
       click_button 'Create User'
 
-      expect(page).to have_content('User created successfully')
+      expect(page).to have_content('User created. A password setup email has been sent.')
       expect(page).to have_content('newuser@test.com')
     end
 
     it 'shows validation errors when creating user with invalid data' do
       visit new_admin_user_path
       fill_in 'user[email]', with: ''
-      fill_in 'user[password]', with: 'password123'
-      fill_in 'user[password_confirmation]', with: 'password123'
       click_button 'Create User'
 
       expect(page).to have_content("Email can't be blank")
@@ -96,7 +92,7 @@ describe 'Admin User Management', type: :system do
       expect(admin_user.reload.role).to eq('admin')
     end
 
-    it 'can delete a regular user' do
+    it 'can delete a regular user', js: true do
       visit admin_users_path
       expect(page).to have_content('user@test.com')
       accept_confirm do

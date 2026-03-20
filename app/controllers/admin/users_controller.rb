@@ -15,10 +15,12 @@ module Admin
     end
 
     def create
-      @user = User.new(user_params)
+      @user = User.new(user_params.except(:password, :password_confirmation))
+      @user.password = SecureRandom.hex(16)
       if @user.save
+        @user.send_reset_password_instructions
         Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} created user #{sanitize_log(@user.email)} with role: #{sanitize_log(@user.role)}")
-        redirect_to admin_users_path, notice: 'User created successfully.'
+        redirect_to admin_users_path, notice: 'User created. A password setup email has been sent.'
       else
         Rails.logger.warn("[ADMIN AUDIT] #{sanitize_log(current_user.email)} failed to create user: #{sanitize_log(@user.errors.full_messages.join(', '))}")
         render :new, status: :unprocessable_entity

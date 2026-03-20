@@ -23,11 +23,10 @@
     <% end %>
   </div>
 
+  <% if user.persisted? %>
   <div class="form-group" style="margin-bottom: 1rem;">
     <%= f.label :password, style: 'display: block; margin-bottom: 0.5rem; font-weight: bold;' %>
-    <% if user.persisted? %>
-      <small style="color: #6c757d; display: block; margin-bottom: 0.25rem;">Leave blank to keep current password</small>
-    <% end %>
+    <small style="color: #6c757d; display: block; margin-bottom: 0.25rem;">Leave blank to keep current password</small>
     <%= f.password_field :password, class: 'form-control', autocomplete: 'new-password', style: 'width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px;' %>
   </div>
 
@@ -35,6 +34,9 @@
     <%= f.label :password_confirmation, style: 'display: block; margin-bottom: 0.5rem; font-weight: bold;' %>
     <%= f.password_field :password_confirmation, class: 'form-control', autocomplete: 'new-password', style: 'width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px;' %>
   </div>
+  <% else %>
+  <p style="color: #6c757d; font-size: 0.9rem; margin-bottom: 1.5rem;">A password setup email will be sent to the user.</p>
+  <% end %>
 
   <div class="form-actions">
     <%= f.submit class: 'btn btn-primary', style: 'margin-right: 0.5rem;' %>
