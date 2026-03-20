@@ -55,7 +55,7 @@ class Admin::UsersController < ApplicationController
     last_admin_blocked = false
 
     ApplicationRecord.transaction do
-      if @user.admin? && User.lock.where(role: 'admin').where.not(id: @user.id).count < 1
+      if @user.admin? && !User.where(role: 'admin').where.not(id: @user.id).exists?
         last_admin_blocked = true
         raise ActiveRecord::Rollback
       end
