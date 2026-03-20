@@ -60,12 +60,12 @@ class Admin::UsersController < ApplicationController
         raise ActiveRecord::Rollback
       end
       @user.destroy!
-      Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} deleted user #{sanitize_log(@user.email)}")
     end
 
     if last_admin_blocked
       redirect_to admin_users_path, alert: 'Cannot delete the last admin account.'
     else
+      Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} deleted user #{sanitize_log(@user.email)}")
       redirect_to admin_users_path, notice: 'User deleted successfully.'
     end
   end
