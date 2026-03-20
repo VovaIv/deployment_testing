@@ -1,6 +1,8 @@
 class SurveysController < ApplicationController
+  include AdminAuthorizable
+
   before_action :set_survey, only: [:edit, :update, :destroy]
-  before_action :require_admin, only: [:edit, :update, :destroy]
+  before_action :require_admin, only: [:new, :create, :edit, :update, :destroy]
 
   def index
     @surveys = Survey.all.paginate(page: params[:page], per_page: 5)
@@ -47,11 +49,5 @@ class SurveysController < ApplicationController
 
   def survey_params
     params.require(:survey).permit(:question, answers_attributes: [:id, :text, :_destroy])
-  end
-
-  def require_admin
-    unless current_user.admin?
-      redirect_to surveys_path, alert: 'You are not authorized to perform this action.'
-    end
   end
 end

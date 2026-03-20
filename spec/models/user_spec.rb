@@ -26,6 +26,32 @@ describe User, type: :model do
       user = User.create!(email: 'test@example.com', password: 'password123', password_confirmation: 'password123')
       expect(user.role).to eq('user')
     end
+
+    describe 'last admin protection' do
+      let!(:admin) { User.create!(email: 'admin@test.com', password: 'password123', password_confirmation: 'password123', role: 'admin') }
+
+      it 'prevents demoting the last admin' do
+        admin.role = 'user'
+        expect(admin).not_to be_valid
+        expect(admin.errors[:role]).to include('cannot remove the last admin account')
+      end
+
+      it 'allows demoting an admin when another admin exists' do
+        User.create!(email: 'admin2@test.com', password: 'password123', password_confirmation: 'password123', role: 'admin')
+        admin.role = 'user'
+        expect(admin).to be_valid
+      end
+
+      it 'does not fire on create' do
+        new_admin = User.new(email: 'new@test.com', password: 'password123', password_confirmation: 'password123', role: 'admin')
+        expect(new_admin).to be_valid
+      end
+
+      it 'does not fire when role is unchanged' do
+        admin.email = 'changed@test.com'
+        expect(admin).to be_valid
+      end
+    end
   end
 
   describe '#admin?' do
