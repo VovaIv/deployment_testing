@@ -16,7 +16,7 @@ class Admin::UsersController < ApplicationController
   def create
     @user = User.new(user_params)
     if @user.save
-      Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} created user #{sanitize_log(@user.email)} with role: #{@user.role}")
+      Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} created user #{sanitize_log(@user.email)} with role: #{sanitize_log(@user.role)}")
       redirect_to admin_users_path, notice: 'User created successfully.'
     else
       Rails.logger.warn("[ADMIN AUDIT] #{sanitize_log(current_user.email)} failed to create user: #{sanitize_log(@user.errors.full_messages.join(', '))}")
@@ -38,7 +38,7 @@ class Admin::UsersController < ApplicationController
     end
 
     if @user.update(update_params)
-      Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} updated user #{sanitize_log(@user.email)} — role: #{@user.role}")
+      Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} updated user #{sanitize_log(@user.email)} — role: #{sanitize_log(@user.role)}")
       redirect_to admin_users_path, notice: 'User updated successfully.'
     else
       Rails.logger.warn("[ADMIN AUDIT] #{sanitize_log(current_user.email)} failed to update user #{sanitize_log(@user.email)}: #{sanitize_log(@user.errors.full_messages.join(', '))}")
