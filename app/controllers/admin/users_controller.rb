@@ -56,19 +56,21 @@ module Admin
       end
 
       last_admin_blocked = false
+      destroyed_email = @user.email
 
       ApplicationRecord.transaction do
-        if @user.admin? && !User.lock.where(role: 'admin').where.not(id: @user.id).exists?
+        locked_user = User.lock.find(@user.id)
+        if locked_user.admin? && !User.where(role: 'admin').where.not(id: locked_user.id).lock.exists?
           last_admin_blocked = true
           raise ActiveRecord::Rollback
         end
-        @user.destroy!
+        locked_user.destroy!
       end
 
       if last_admin_blocked
         redirect_to admin_users_path, alert: 'Cannot delete the last admin account.'
       else
-        Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} deleted user #{sanitize_log(@user.email)}")
+        Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} deleted user #{sanitize_log(destroyed_email)}")
         redirect_to admin_users_path, notice: 'User deleted successfully.'
       end
     end
