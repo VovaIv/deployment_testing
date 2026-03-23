@@ -16,8 +16,9 @@ containerised environments.
 | Pagination | will_paginate (~> 3.3) |
 | Database | SQLite3 (development/test), MySQL2 (production) |
 | Server | Puma |
-| Testing | RSpec + Capybara + Selenium WebDriver |
-| Deployment | Capistrano 3.20, rbenv (Ruby 3.2.1), Puma systemd |
+| Authentication | Devise (database_authenticatable, registerable, recoverable, rememberable, validatable) |
+| Testing | RSpec + Capybara + Selenium WebDriver (remote Chrome for JS, rack_test for non-JS) |
+| Deployment | Capistrano 3.20, rbenv (Ruby 3.2.3), Puma systemd |
 | Containerisation | Docker (multi-stage, non-root rails user) |
 
 ---
@@ -42,6 +43,14 @@ SurveyResponse
   belongs_to :survey
   belongs_to :answer
   validates :answer_id, presence: true
+
+User
+  email: string (required, unique)
+  encrypted_password: string (managed by Devise)
+  role: string (required, default: "user", values: "user" | "admin")
+  Devise modules: database_authenticatable, registerable, recoverable, rememberable, validatable
+  validates :role, presence: true, inclusion: { in: %w[user admin] }
+  def admin? → true when role == "admin"
 ```
 
 `Survey` provides analytics helpers:
@@ -59,12 +68,19 @@ SurveyResponse
 ```
 root → surveys#index
 
+# Devise authentication routes
+/users/sign_in                             GET  devise/sessions#new
+/users/sign_in                             POST devise/sessions#create
+/users/sign_out                            DELETE devise/sessions#destroy
+/users/sign_up                             GET  devise/registrations#new
+/users/password                            (password reset routes)
+
 /surveys                             GET  surveys#index
-/surveys/new                         GET  surveys#new
-/surveys                             POST surveys#create
-/surveys/:id/edit                    GET  surveys#edit
-/surveys/:id                         PATCH/PUT surveys#update
-/surveys/:id                         DELETE surveys#destroy
+/surveys/new                         GET  surveys#new        [admin only]
+/surveys                             POST surveys#create     [admin only]
+/surveys/:id/edit                    GET  surveys#edit       [admin only]
+/surveys/:id                         PATCH/PUT surveys#update [admin only]
+/surveys/:id                         DELETE surveys#destroy  [admin only]
 
 /surveys/:survey_id/survey_responses/new   GET  survey_responses#new
 /surveys/:survey_id/survey_responses       POST survey_responses#create
@@ -76,9 +92,13 @@ root → surveys#index
 
 ## Controllers
 
+### ApplicationController
+- `before_action :authenticate_user!` — all actions require an authenticated user (Devise); unauthenticated requests are redirected to `/users/sign_in`
+
 ### SurveysController
 - Pagination: 5 per page via `will_paginate`
 - `new` / `edit` build one blank answer field if none present
+- `before_action :require_admin` guards `new`, `create`, `edit`, `update`, `destroy` — non-admin users are redirected to `surveys_path` with an alert
 - Strong params: `params.require(:survey).permit(:question, answers_attributes: [:id, :text, :_destroy])`
 
 ### SurveyResponsesController
@@ -135,18 +155,21 @@ root → surveys#index
 ### Framework: RSpec + Capybara
 
 - **Model specs** in `spec/models/` — test validations, associations, and business logic methods
-- **System specs** in `spec/system/` — full browser tests via Selenium WebDriver; test Turbo Stream interactions end-to-end
-- No request or controller specs currently; prefer system specs for controller-level coverage
+- **Request specs** in `spec/requests/` — test authentication, authorisation, and HTTP-level behaviour
+- **System specs** in `spec/system/` — full browser tests; test Turbo Stream interactions and auth flows end-to-end
 
 ### Conventions
-- Use FactoryBot-style `create` / `build` helpers (via RSpec Rails) — no fixtures
-- System specs drive a real browser; ensure `driven_by :selenium` is configured in `spec/rails_helper.rb`
+- Use `User.create!` directly in specs (no FactoryBot); sign users in with `sign_in user` from `Devise::Test::IntegrationHelpers`
+- Non-JS system specs use `:rack_test` driver (fast, default); JS system specs use `:remote_chrome` (Selenium Remote, headless Chrome at `SELENIUM_REMOTE_URL`)
+- Mark JS tests with `js: true` metadata — `rails_helper.rb` switches the driver automatically
 - Test analytics: verify `total_responses_count`, `answer_count`, `answer_percentage` after creating fixtures
+- System specs for write actions (create/edit/delete surveys) must `sign_in` an admin user in a `before` block
 
 ### Running Tests
 ```bash
 bundle exec rspec                    # all specs
 bundle exec rspec spec/models/       # model specs only
+bundle exec rspec spec/requests/     # request specs only
 bundle exec rspec spec/system/       # system specs only
 ```
 
@@ -190,7 +213,8 @@ bin/dev           # starts Rails server via Procfile.dev
 - **No raw SQL**: Use ActiveRecord query interface; if raw SQL is needed, use parameterised queries (`sanitize_sql`)
 - **Credentials**: Secrets live in `config/credentials.yml.enc` (encrypted); never commit plaintext secrets; `master.key` is in `.gitignore`
 - **XSS**: Never use `html_safe`, `raw`, or `.html_safe` on user-supplied data
-- **Authorisation**: Currently no authentication; if added, enforce in `ApplicationController` with a `before_action` and use `current_user` scoping on all queries
+- **Authentication**: Enforced globally via `before_action :authenticate_user!` in `ApplicationController` (Devise); all routes require a signed-in user
+- **Authorisation**: Write actions (`new`, `create`, `edit`, `update`, `destroy`) on surveys are admin-only, enforced by `require_admin` in `SurveysController`; use `current_user.admin?` to check role; non-admins are redirected rather than getting a 403
 - **Delete guard**: Surveys with responses must not be deleteable — enforce in controller (`survey.survey_responses.exists?`), not only in view
 
 ---
@@ -213,6 +237,8 @@ bin/dev           # starts Rails server via Procfile.dev
 | Survey model | `app/models/survey.rb` |
 | Answer model | `app/models/answer.rb` |
 | SurveyResponse model | `app/models/survey_response.rb` |
+| User model (auth + roles) | `app/models/user.rb` |
+| Application controller (auth) | `app/controllers/application_controller.rb` |
 | Surveys controller | `app/controllers/surveys_controller.rb` |
 | Survey responses controller | `app/controllers/survey_responses_controller.rb` |
 | Routes | `config/routes.rb` |
@@ -223,7 +249,10 @@ bin/dev           # starts Rails server via Procfile.dev
 | Response form | `app/views/survey_responses/_form.html.erb` |
 | Turbo stream (new) | `app/views/survey_responses/new.turbo_stream.erb` |
 | Turbo stream (update) | `app/views/survey_responses/update.turbo_stream.erb` |
-| System spec | `spec/system/survey_tool_spec.rb` |
+| System spec (survey tool) | `spec/system/survey_tool_spec.rb` |
+| System spec (authentication) | `spec/system/authentication_spec.rb` |
+| Request spec (surveys) | `spec/requests/surveys_controller_spec.rb` |
+| Model spec (user) | `spec/models/user_spec.rb` |
 | Capistrano deploy | `config/deploy.rb` |
 | Production server | `config/deploy/production.rb` |
 | Docker entrypoint | `bin/docker-entrypoint` |
