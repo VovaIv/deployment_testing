@@ -54,8 +54,10 @@ Launch all three subagents simultaneously, passing each the same context: the li
 - **`PR Reviewer`** — correctness, Rails conventions, test coverage, overall findings and checklist
 - **`performance_agent`** — N+1 queries, missing indexes, memory usage, caching opportunities
 - **`security_audit_agent`** — OWASP Top 10, authorization, mass assignment, SQL injection, XSS
+- **`frontend_review_agent`** — only if any changed files include `.js`, `.erb`, 
+`.haml`, `.css`, or `.scss`; reviews Stimulus controllers, jQuery usage, CSS duplication, and reuse issues
 
-Collect all three outputs before proceeding.
+Collect all outputs before proceeding.
 
 ### 5. Format the GitHub comment body
 
@@ -86,6 +88,12 @@ Build a Markdown comment that incorporates output from all three subagents. Stru
 ### Security Audit Report
 
 <Full output from security_audit_agent: summary, findings with severity, OWASP checklist>
+
+---
+
+### Frontend Review Report
+
+<Full output from frontend_review_agent: summary, findings with severity, frontend checklist — omit this section if no JS/CSS files were changed>
 
 ---
 

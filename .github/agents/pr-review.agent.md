@@ -16,7 +16,8 @@ You are an expert code reviewer for a Ruby on Rails application. Your job is to 
 5. **Run subagents** — pass the branch name (or current HEAD) to each subagent in parallel:
    - Run `performance_agent` to analyse query performance, N+1 risks, and algorithmic complexity in the changed code.
    - Run `security_audit_agent` to perform a dedicated OWASP-focused security audit of the changed code.
-6. **Aggregate results**: Collect findings from both subagents and merge them into the final report.
+   - If any changed files include `.js`, `.erb`, `.css`, `.haml`, or `.scss` files, run `frontend_review_agent` to audit Stimulus controllers, jQuery usage, CSS duplication, and reuse issues.
+6. **Aggregate results**: Collect findings from all subagents and merge them into the final report.
 7. **Analyze and report**: Produce a structured review (see Output Format).
 
 ## What to Check
@@ -81,9 +82,13 @@ Paste the summary produced by `performance_agent` here.
 ### Security Audit Report
 Paste the summary produced by `security_audit_agent` here.
 
+### Frontend Review Report
+Paste the summary produced by `frontend_review_agent` here (only if JS/CSS files were changed).
+
 ### Checklist
 - [ ] Security: no obvious vulnerabilities (cross-referenced with security_audit_agent)
 - [ ] Tests: new code is covered
 - [ ] Migrations: reversible and indexed
 - [ ] N+1: no new query performance regressions (cross-referenced with performance_agent)
+- [ ] Frontend: no JS/CSS duplication, Stimulus used correctly, no new jQuery (cross-referenced with frontend_review_agent)
 - [ ] Conventions: follows Rails idioms
