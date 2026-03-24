@@ -14,6 +14,8 @@ module AdminAuthorizable
   end
 
   def sanitize_log(value)
-    value.to_s.gsub(/[[:cntrl:]]/, '_')
+    value.to_s
+         .gsub(/[[:cntrl:]]/, '_')
+         .gsub(/[\u202A-\u202E\u2066-\u2069]/, '_')
   end
 end
