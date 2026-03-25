@@ -180,11 +180,13 @@ RSpec.describe 'Admin::Users', type: :request do
       end
 
       it 'prevents deleting the sole remaining admin' do
-        # The last-admin guard handles concurrent requests: two admins could both pass
-        # require_admin, then both attempt deletion, leaving zero admins.
-        # In a sequential test the signed-in user is always counted as "another admin",
-        # preventing the guard from firing normally. We stub require_admin to isolate
-        # the guard logic and verify it blocks deletion of the sole admin.
+        # The last-admin guard handles concurrent requests where two requests both pass
+        # require_admin and then race to delete the last admin.  In a sequential test the
+        # signed-in admin is always counted as "another admin", preventing the guard from
+        # firing.  We sign in as a regular user and stub require_admin to simulate a
+        # request that passed auth (e.g. the second concurrent request), while ensuring
+        # @user != current_user so the self-deletion guard does not fire first.
+        sign_in regular_user
         allow_any_instance_of(Admin::UsersController).to receive(:require_admin)
         delete admin_user_path(admin_user)
         expect(response).to redirect_to(admin_users_path)
