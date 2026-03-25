@@ -18,8 +18,8 @@
   <% if user.persisted? %>
   <div class="form-group" style="margin-bottom: 1rem;">
     <%= f.label :password, style: 'display: block; margin-bottom: 0.5rem; font-weight: bold;' %>
-    <small style="color: #6c757d; display: block; margin-bottom: 0.25rem;">Leave blank to keep current password</small>
-    <%= f.password_field :password, class: 'form-control', autocomplete: 'new-password', style: 'width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px;' %>
+    <small id="password_hint" style="color: #6c757d; display: block; margin-bottom: 0.25rem;">Leave blank to keep current password</small>
+    <%= f.password_field :password, class: 'form-control', autocomplete: 'new-password', aria: { describedby: 'password_hint' }, style: 'width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px;' %>
   </div>
 
   <div class="form-group" style="margin-bottom: 1.5rem;">
