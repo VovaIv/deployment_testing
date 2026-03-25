@@ -61,7 +61,7 @@ module Admin
       end
 
       if @user.update(update_params)
-        @user.update_column(:remember_created_at, nil)
+        @user.update_column(:remember_created_at, nil) if update_params.key?(:password)
         Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} updated user #{sanitize_log(@user.email)} — role: #{sanitize_log(@user.role)}")
         redirect_to admin_users_path, notice: 'User updated successfully.'
       else
