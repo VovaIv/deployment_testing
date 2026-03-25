@@ -1,16 +1,7 @@
 <div class="form-container">
   <%= form_with model: survey, html: { data: { controller: "nested-form" } } do |f| %>
     
-    <!-- Display validation errors -->
-    <% if survey.errors.any? %>
-      <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-        <ul style="margin: 0; padding-left: 20px;">
-          <% survey.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-        </ul>
-      </div>
-    <% end %>
+    <%= render 'shared/error_messages', object: survey %>
 
     <div class="form-group">
       <%= f.text_field :question, class: 'form-control', placeholder: 'Enter your question here' %>

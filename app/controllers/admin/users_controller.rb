@@ -7,7 +7,7 @@ module Admin
 
     def index
       @users = User.select(:id, :email, :role, :created_at).order(:email).paginate(page: params[:page], per_page: 25)
-      @admin_count = User.where(role: 'admin').count
+      @admin_count = Rails.cache.fetch('users/admin_count', expires_in: 5.minutes) { User.where(role: 'admin').count }
     end
 
     def new
@@ -19,6 +19,7 @@ module Admin
       @user.password = SecureRandom.hex(16)
       if @user.save
         @user.send_reset_password_instructions
+        Rails.cache.delete('users/admin_count')
         Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} created user #{sanitize_log(@user.email)} with role: #{sanitize_log(@user.role)}")
         redirect_to admin_users_path, notice: 'User created. A password setup email has been sent.'
       else
@@ -41,6 +42,7 @@ module Admin
       end
 
       if @user.update(update_params)
+        Rails.cache.delete('users/admin_count')
         Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} updated user #{sanitize_log(@user.email)} — role: #{sanitize_log(@user.role)}")
         redirect_to admin_users_path, notice: 'User updated successfully.'
       else
@@ -70,6 +72,7 @@ module Admin
       if last_admin_blocked
         redirect_to admin_users_path, alert: 'Cannot delete the last admin account.'
       else
+        Rails.cache.delete('users/admin_count')
         Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} deleted user #{sanitize_log(destroyed_email)}")
         redirect_to admin_users_path, notice: 'User deleted successfully.'
       end
