@@ -41,7 +41,28 @@ module Admin
         update_params = update_params.except(:role)
       end
 
+      # Prevent demoting the last admin via a pessimistic-locked transaction so two
+      # concurrent requests cannot both pass the guard and leave zero admins.
+      # NOTE: SELECT FOR UPDATE is silently ignored by SQLite (dev/test); effective in PostgreSQL.
+      last_admin_blocked = false
+      if @user.admin? && update_params[:role] == 'user'
+        ApplicationRecord.transaction do
+          locked_user = User.lock.find(@user.id)
+          if locked_user.admin? && !User.where(role: 'admin').where.not(id: locked_user.id).lock.exists?
+            last_admin_blocked = true
+            raise ActiveRecord::Rollback
+          end
+        end
+      end
+
+      if last_admin_blocked
+        @user.errors.add(:role, 'cannot remove the last admin account')
+        render :edit, status: :unprocessable_entity
+        return
+      end
+
       if @user.update(update_params)
+        @user.update_column(:remember_created_at, nil)
         Rails.cache.delete('users/admin_count')
         Rails.logger.info("[ADMIN AUDIT] #{sanitize_log(current_user.email)} updated user #{sanitize_log(@user.email)} — role: #{sanitize_log(@user.role)}")
         redirect_to admin_users_path, notice: 'User updated successfully.'

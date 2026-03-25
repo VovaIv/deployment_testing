@@ -18,9 +18,7 @@ class User < ApplicationRecord
   def cannot_demote_last_admin
     return unless role_changed? && role == 'user' && role_was == 'admin'
 
-    # NOTE: SELECT FOR UPDATE is silently ignored by SQLite (used in dev/test).
-    # This pessimistic lock is only effective in PostgreSQL-backed production.
-    no_other_admins = !User.lock.where(role: 'admin').where.not(id: id).exists?
+    no_other_admins = !User.where(role: 'admin').where.not(id: id).exists?
     errors.add(:role, 'cannot remove the last admin account') if no_other_admins
   end
 end

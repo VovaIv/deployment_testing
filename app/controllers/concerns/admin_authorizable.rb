@@ -4,6 +4,7 @@ module AdminAuthorizable
   private
 
   def require_admin
+    authenticate_user!
     return if current_user&.admin?
 
     safe_path  = request.path.to_s.gsub(/[^\w\-\/]/, '_')
